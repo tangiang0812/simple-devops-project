@@ -1,0 +1,28 @@
+# General
+*.log
+*.tmp
+*.swp
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+.crash.log
+override.tf
+override.tf.json
+tfplan*
+.terraform/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
