@@ -1,11 +1,11 @@
 variable "region" {
   type    = string
-  default = "us-west-1"
+  default = "us-east-1"
 }
 
 variable "project" {
   description = "The project name to use for unique resource naming"
-  default     = "standard-terraform-backend"
+  default     = "standard-terraform"
   type        = string
 }
 

@@ -19,6 +19,11 @@ data "aws_iam_policy_document" "policy_doc" {
     actions   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:DeleteItem"]
     resources = [aws_dynamodb_table.dynamodb_table.arn]
   }
+
+  # statement {
+  #   actions   = ["kms:GenerateDataKey", "kms:Decrypt", "kms:Encrypt", "kms:ReEncrypt*"]
+  #   resources = [aws_kms_key.kms_key.arn]
+  # }
 }
 
 resource "aws_iam_policy" "policy" {

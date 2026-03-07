@@ -51,6 +51,9 @@ module "vpc" {
   nat_gateway_tags = {
     Name = "gitlab-nat-gw"
   }
+  database_subnet_group_tags = {
+    Name = "gitlab-database-subnet-group"
+  }
 
   #   database_subnet_ipv6_prefixes = [1, 5, 9]
   #   private_subnet_ipv6_prefixes  = [2, 6, 10]
