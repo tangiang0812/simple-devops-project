@@ -1,3 +1,3 @@
-output "name_servers" {
-  value = module.dns.name_servers
-}
+# output "name_servers" {
+#   value = module.dns.name_servers
+# }

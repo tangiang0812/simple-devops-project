@@ -94,11 +94,36 @@ resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_rails_http_from_g
   to_port                      = 80
 }
 
-resource "aws_security_group" "gitlab-rds-sec-group" {
+resource "aws_security_group" "gitlab_rds_sec_group" {
   name        = "gitlab rds sec group"
   description = "Allow PostgreSQL IPv4 In"
   vpc_id      = var.vpc_id
   tags = {
     Name = "gitlab_rds_sec_group"
   }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_rds_postgres_from_gitlab_rails" {
+  security_group_id            = aws_security_group.gitlab_rds_sec_group.id
+  referenced_security_group_id = aws_security_group.gitlab_rails_sec_group.id
+  from_port                    = 5432
+  ip_protocol                  = "tcp"
+  to_port                      = 5432
+}
+
+resource "aws_security_group" "gitlab_redis_sec_group" {
+  name        = "gitlab redis sec group"
+  description = "Allow Redis IPv4 In"
+  vpc_id      = var.vpc_id
+  tags = {
+    Name = "gitlab_redis_sec_group"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_redis_from_gitlab_rails" {
+  security_group_id            = aws_security_group.gitlab_redis_sec_group.id
+  referenced_security_group_id = aws_security_group.gitlab_rails_sec_group.id
+  from_port                    = 6379
+  ip_protocol                  = "tcp"
+  to_port                      = 6379
 }

@@ -23,7 +23,7 @@ variable "health_logs_bucket_id" {
 }
 
 
-variable "alb_cert_arn" {
-  description = "The ARN of the ACM certificate for the application load balancer."
-  type        = string
-}
+# variable "alb_cert_arn" {
+#   description = "The ARN of the ACM certificate for the application load balancer."
+#   type        = string
+# }

@@ -25,7 +25,7 @@ module "loadbalancer" {
   subnets               = module.network.public_subnets
   vpc_id                = module.network.vpc_id
   health_logs_bucket_id = module.s3.health_logs_bucket_id
-  alb_cert_arn          = module.certificates.gitlab_alb_cert_arn
+  # alb_cert_arn          = module.certificates.gitlab_alb_cert_arn
 }
 
 # module "dns" {
@@ -42,3 +42,16 @@ module "loadbalancer" {
 #   nlb_hosted_zone_id = module.loadbalancer.nlb_hosted_zone_id
 #   zone_id            = module.dns.zone_id
 # }
+
+module "database" {
+  source                 = "../../modules/database"
+  db_subnet_group_name   = module.network.database_subnet_group_name
+  vpc_security_group_ids = [module.security.gitlab_database_sec_group.id]
+  # availability_zone      = data.aws_availability_zones.available.names[0]
+}
+
+module "cache" {
+  source                        = "../../modules/cache"
+  elasticache_subnet_group_name = module.network.elasticache_subnet_group_name
+  security_group_ids            = [module.security.gitlab_redis_sec_group.id]
+}

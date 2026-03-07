@@ -23,6 +23,7 @@ module "vpc" {
   enable_nat_gateway     = true
   one_nat_gateway_per_az = true
   single_nat_gateway     = false
+  elasticache_subnets    = ["10.16.64.0/20", "10.16.128.0/20", "10.16.192.0/20"]
   public_subnets         = ["10.16.48.0/20", "10.16.112.0/20", "10.16.176.0/20"]
   private_subnets        = ["10.16.32.0/20", "10.16.96.0/20", "10.16.160.0/20"]
   database_subnets       = ["10.16.16.0/20", "10.16.80.0/20", "10.16.144.0/20"]
