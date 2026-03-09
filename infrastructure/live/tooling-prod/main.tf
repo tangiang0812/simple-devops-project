@@ -25,33 +25,42 @@ module "loadbalancer" {
   subnets               = module.network.public_subnets
   vpc_id                = module.network.vpc_id
   health_logs_bucket_id = module.s3.health_logs_bucket_id
-  # alb_cert_arn          = module.certificates.gitlab_alb_cert_arn
+  alb_cert_arn          = module.certificates.gitlab_alb_cert_arn
 }
 
-# module "dns" {
-#   source             = "../../modules/dns"
-#   domain_name        = var.domain_name
-#   nlb_dns_name       = module.loadbalancer.nlb_dns_name
-#   nlb_hosted_zone_id = module.loadbalancer.nlb_hosted_zone_id
-#   vpc_id             = module.network.vpc_id
-# }
+module "dns" {
+  source             = "../../modules/dns"
+  domain_name        = var.domain_name
+  route53_zone_id    = var.route53_zone_id
+  nlb_dns_name       = module.loadbalancer.nlb_dns_name
+  nlb_hosted_zone_id = module.loadbalancer.nlb_hosted_zone_id
+  vpc_id             = module.network.vpc_id
+}
 
-# module "certificates" {
-#   source             = "../../modules/certificates"
-#   domain_name        = var.domain_name
-#   nlb_hosted_zone_id = module.loadbalancer.nlb_hosted_zone_id
-#   zone_id            = module.dns.zone_id
-# }
+module "certificates" {
+  source             = "../../modules/certificates"
+  domain_name        = var.domain_name
+  nlb_hosted_zone_id = module.loadbalancer.nlb_hosted_zone_id
+  zone_id            = module.dns.zone_id
+}
 
 module "database" {
   source                 = "../../modules/database"
   db_subnet_group_name   = module.network.database_subnet_group_name
   vpc_security_group_ids = [module.security.gitlab_database_sec_group.id]
-  # availability_zone      = data.aws_availability_zones.available.names[0]
 }
 
 module "cache" {
   source                        = "../../modules/cache"
   elasticache_subnet_group_name = module.network.elasticache_subnet_group_name
   security_group_ids            = [module.security.gitlab_redis_sec_group.id]
+}
+
+module "compute" {
+  source                      = "../../modules/compute"
+  bastion_host_sec_group      = module.security.bastion_host_sec_group.id
+  gitlab_rails_sec_group      = module.security.gitlab_rails_sec_group.id
+  private_subnets             = module.network.private_subnets
+  public_subnets              = module.network.public_subnets
+  bastion_instance_profile_id = module.iam.bastion_instance_profile_id
 }

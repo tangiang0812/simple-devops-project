@@ -24,9 +24,18 @@ resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_nlb_https_from_an
   to_port           = 443
 }
 
-resource "aws_vpc_security_group_egress_rule" "egress_gitlab_nlb_ssh_to_gitlab_rails" {
+# resource "aws_vpc_security_group_egress_rule" "egress_gitlab_nlb_ssh_to_gitlab_rails" {
+#   security_group_id            = aws_security_group.gitlab_nlb_sec_group.id
+#   referenced_security_group_id = aws_security_group.gitlab_rails_sec_group.id
+#   # cidr_ipv4         = "0.0.0.0/0"
+#   from_port   = 22
+#   ip_protocol = "tcp"
+#   to_port     = 22
+# }
+
+resource "aws_vpc_security_group_egress_rule" "egress_gitlab_nlb_ssh_to_bastion_host" {
   security_group_id            = aws_security_group.gitlab_nlb_sec_group.id
-  referenced_security_group_id = aws_security_group.gitlab_rails_sec_group.id
+  referenced_security_group_id = aws_security_group.bastion_host_sec_group.id
   # cidr_ipv4         = "0.0.0.0/0"
   from_port   = 22
   ip_protocol = "tcp"
@@ -50,8 +59,6 @@ resource "aws_security_group" "gitlab_alb_sec_group" {
     Name = "gitlab_alb_sec_group"
   }
 }
-
-
 
 resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_alb_https_from_gitlab_nlb" {
   security_group_id            = aws_security_group.gitlab_alb_sec_group.id
@@ -78,9 +85,17 @@ resource "aws_security_group" "gitlab_rails_sec_group" {
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_rails_ssh_from_gitlab_nlb" {
+# resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_rails_ssh_from_gitlab_nlb" {
+#   security_group_id            = aws_security_group.gitlab_rails_sec_group.id
+#   referenced_security_group_id = aws_security_group.gitlab_nlb_sec_group.id
+#   from_port                    = 22
+#   ip_protocol                  = "tcp"
+#   to_port                      = 22
+# }
+
+resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_rails_ssh_from_gitlab_bastion_host" {
   security_group_id            = aws_security_group.gitlab_rails_sec_group.id
-  referenced_security_group_id = aws_security_group.gitlab_nlb_sec_group.id
+  referenced_security_group_id = aws_security_group.bastion_host_sec_group.id
   from_port                    = 22
   ip_protocol                  = "tcp"
   to_port                      = 22
@@ -92,6 +107,55 @@ resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_rails_http_from_g
   from_port                    = 80
   ip_protocol                  = "tcp"
   to_port                      = 80
+}
+
+resource "aws_vpc_security_group_egress_rule" "egress_gitlab_rails_to_gitlab_rds" {
+  security_group_id            = aws_security_group.gitlab_rails_sec_group.id
+  referenced_security_group_id = aws_security_group.gitlab_rds_sec_group.id
+  from_port                    = 5432
+  ip_protocol                  = "tcp"
+  to_port                      = 5432
+}
+
+resource "aws_vpc_security_group_egress_rule" "egress_gitlab_rails_to_gitlab_redis" {
+  security_group_id            = aws_security_group.gitlab_rails_sec_group.id
+  referenced_security_group_id = aws_security_group.gitlab_redis_sec_group.id
+  from_port                    = 6379
+  ip_protocol                  = "tcp"
+  to_port                      = 6379
+}
+
+resource "aws_security_group" "bastion_host_sec_group" {
+  name        = "bastion host sec group"
+  description = "Allow SSH IPv4 In"
+  vpc_id      = var.vpc_id
+  tags = {
+    Name = "bastion_host_sec_group"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "ingress_bastion_host_ssh_from_gitlab_nlb" {
+  security_group_id            = aws_security_group.bastion_host_sec_group.id
+  referenced_security_group_id = aws_security_group.gitlab_nlb_sec_group.id
+  from_port                    = 22
+  ip_protocol                  = "tcp"
+  to_port                      = 22
+}
+
+resource "aws_vpc_security_group_egress_rule" "egress_bastion_host_to_ssm" {
+  security_group_id = aws_security_group.bastion_host_sec_group.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  ip_protocol       = "tcp"
+  to_port           = 443
+}
+
+resource "aws_vpc_security_group_egress_rule" "egress_bastion_host_ssh_to_gitlab_rails" {
+  security_group_id            = aws_security_group.bastion_host_sec_group.id
+  referenced_security_group_id = aws_security_group.gitlab_rails_sec_group.id
+  from_port                    = 22
+  ip_protocol                  = "tcp"
+  to_port                      = 22
 }
 
 resource "aws_security_group" "gitlab_rds_sec_group" {

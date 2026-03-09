@@ -8,3 +8,9 @@ variable "domain_name" {
   default     = "gnaig.click"
   type        = string
 }
+
+variable "route53_zone_id" {
+  description = "The ID of the existing Route 53 hosted zone to use."
+  default     = "Z0771552XNTYMRHKW4VW"
+  type        = string
+}

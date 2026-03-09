@@ -5,6 +5,7 @@ resource "aws_lb" "gitlab_nlb" {
   subnets                    = var.subnets
   security_groups            = [var.nlb_sec_group_id]
   enable_deletion_protection = false
+  # enable_cross_zone_load_balancing = true
 
   # access_logs {
   #   bucket  = var.health_logs_bucket_id
@@ -109,9 +110,9 @@ resource "aws_lb_target_group" "gitlab_alb_http_target" {
 
 resource "aws_lb_listener" "gitlab_alb_https_listener" {
   load_balancer_arn = aws_lb.gitlab_alb.arn
-  protocol          = "HTTP"
+  protocol          = "HTTPS"
   port              = "443"
-  # certificate_arn   = var.alb_cert_arn
+  certificate_arn   = var.alb_cert_arn
 
   default_action {
     type             = "forward"

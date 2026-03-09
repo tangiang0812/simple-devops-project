@@ -1,12 +1,17 @@
-resource "aws_route53_zone" "gitlab_zone" {
-  name = var.domain_name
-  vpc {
-    vpc_id = var.vpc_id
-  }
+# resource "aws_route53_zone" "gitlab_zone" {
+#   name = var.domain_name
+# } 
+# remove from terraform state and import existing zone
+
+data "aws_route53_zone" "gitlab_zone" {
+  zone_id = var.route53_zone_id
+  # private_zone = false
+  # name         = var.domain_name
 }
 
 resource "aws_route53_record" "gitlab_alb_record" {
-  zone_id = aws_route53_zone.gitlab_zone.id
+  # zone_id = aws_route53_zone.gitlab_zone.id
+  zone_id = data.aws_route53_zone.gitlab_zone.id
   name    = "gitlab.${var.domain_name}"
   type    = "A"
 
@@ -16,4 +21,5 @@ resource "aws_route53_record" "gitlab_alb_record" {
     evaluate_target_health = true
   }
 }
+
 

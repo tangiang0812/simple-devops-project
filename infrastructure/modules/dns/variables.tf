@@ -18,12 +18,7 @@ variable "domain_name" {
   type        = string
 }
 
-# variable "gitlab_alb_cert_domain_validation_options" {
-#   description = "Domain validation options for the ACM certificate."
-#   type = list(object({
-#     domain_name           = string
-#     resource_record_name  = string
-#     resource_record_value = string
-#     resource_record_type  = string
-#   }))
-# }
+variable "route53_zone_id" {
+  description = "The ID of the existing Route 53 hosted zone to use."
+  type        = string
+}
