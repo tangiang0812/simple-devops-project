@@ -28,7 +28,7 @@ output "nlb_hosted_zone_id" {
   value       = data.aws_lb_hosted_zone_id.gitlab_nlb.id
 }
 
-# output "alb_private_ip_addresses" {
-#   description = "Private IP addresses of the load balancer."
-#   value       = aws_lb.gitlab_alb.subnet_mapping[*].private_ip_address
-# }
+output "gitlab_alb_http_target_group_arn" {
+  description = "ARN of the GitLab ALB HTTP target group."
+  value       = aws_lb_target_group.gitlab_alb_http_target.arn
+}

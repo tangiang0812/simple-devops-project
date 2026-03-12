@@ -58,13 +58,15 @@ module "cache" {
 }
 
 module "compute" {
-  source                      = "../../modules/compute"
-  bastion_host_sec_group      = module.security.bastion_host_sec_group.id
-  gitlab_rails_sec_group      = module.security.gitlab_rails_sec_group.id
-  private_subnets             = module.network.private_subnets
-  public_subnets              = module.network.public_subnets
-  bastion_instance_profile_id = module.iam.bastion_instance_profile_id
-  depends_on                  = [module.configstore]
+  source                            = "../../modules/compute"
+  bastion_host_sec_group            = module.security.bastion_host_sec_group.id
+  gitlab_rails_sec_group            = module.security.gitlab_rails_sec_group.id
+  private_subnets                   = module.network.private_subnets
+  public_subnets                    = module.network.public_subnets
+  bastion_instance_profile_id       = module.iam.bastion_instance_profile_id
+  gitlab_alb_http_target_group_arn  = module.loadbalancer.gitlab_alb_http_target_group_arn
+  gitlab_rails_instance_profile_arn = module.iam.bastion_instance_profile_arn
+  depends_on                        = [module.configstore]
 }
 
 module "configstore" {

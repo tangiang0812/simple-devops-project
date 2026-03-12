@@ -20,24 +20,79 @@ data "aws_ami" "gitlab_rails_ami" {
 }
 
 
-resource "aws_instance" "gitlab_rails_instance" {
-  ami = data.aws_ami.gitlab_rails_ami.id
-  # instance_type = "t3.micro"
-  # default user for gitlab-rails-instance is ubuntu, ssh
-  instance_type               = "m7i-flex.large"
-  iam_instance_profile        = var.bastion_instance_profile_id
-  subnet_id                   = var.private_subnets[0]
-  key_name                    = aws_key_pair.bastion_key_pair.key_name
-  associate_public_ip_address = false
-  vpc_security_group_ids      = [var.gitlab_rails_sec_group]
+# resource "aws_instance" "gitlab_rails_instance" {
+#   ami = data.aws_ami.gitlab_rails_ami.id
+#   # instance_type = "t3.micro"
+#   # default user for gitlab-rails-instance is ubuntu, ssh
+#   instance_type               = "m7i-flex.large"
+#   iam_instance_profile        = var.bastion_instance_profile_id
+#   subnet_id                   = var.private_subnets[0]
+#   key_name                    = aws_key_pair.bastion_key_pair.key_name
+#   associate_public_ip_address = false
+#   vpc_security_group_ids      = [var.gitlab_rails_sec_group]
+#   credit_specification {
+#     cpu_credits = "standard"
+#   }
+
+#   user_data = file("${path.module}/user_data_stage_5.sh")
+
+#   tags = {
+#     Name = "gitlab-rails-instance"
+#   }
+# }
+
+resource "aws_autoscaling_group" "gitlab_rails_asg" {
+  name                      = "gitlab-rails-autoscale-group"
+  desired_capacity          = 3
+  max_size                  = 5
+  min_size                  = 1
+  vpc_zone_identifier       = var.private_subnets
+  target_group_arns         = [var.gitlab_alb_http_target_group_arn]
+  health_check_grace_period = 300
+  health_check_type         = "EC2"
+
+  launch_template {
+    id      = aws_launch_template.gitlab_rails_launch_template.id
+    version = "$Latest"
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "gitlab-rails-instance"
+    propagate_at_launch = true
+  }
+
+}
+
+resource "aws_launch_template" "gitlab_rails_launch_template" {
+  name_prefix   = "gitlab-rails-launch-template"
+  image_id      = data.aws_ami.gitlab_rails_ami.id
+  instance_type = "m7i-flex.large"
+  key_name      = aws_key_pair.bastion_key_pair.key_name
+
+  iam_instance_profile {
+    arn = var.gitlab_rails_instance_profile_arn
+  }
+
+  network_interfaces {
+    associate_public_ip_address = false
+    security_groups = [
+      var.gitlab_rails_sec_group
+    ]
+  }
+
   credit_specification {
     cpu_credits = "standard"
   }
 
-  user_data = file("${path.module}/user_data_stage_5.sh")
+  user_data = filebase64("${path.module}/user_data_stage_5.sh")
 
-  tags = {
-    Name = "gitlab-rails-instance"
+  tag_specifications {
+    resource_type = "instance"
+
+    tags = {
+      Name = "gitlab-rails-instance"
+    }
   }
 }
 

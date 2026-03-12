@@ -1,6 +1,7 @@
 #!/bin/bash -xe
 
 apt update && apt upgrade -y
+# apt update -y
 apt install -y unzip curl
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
@@ -32,8 +33,6 @@ REDIS_ENDPOINT=$(echo $REDIS_ENDPOINT | sed -e 's/^"//' -e 's/"$//')
 
 DOMAIN=$(aws ssm get-parameters --region us-east-1 --names /gitlab/domain_name --query Parameters[0].Value)
 DOMAIN=$(echo $DOMAIN | sed -e 's/^"//' -e 's/"$//')
-
-#!/bin/bash
 
 FILE="/etc/gitlab/gitlab.rb"
 
