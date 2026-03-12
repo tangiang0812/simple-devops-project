@@ -2,7 +2,7 @@ resource "aws_lb" "gitlab_nlb" {
   name                       = "gitlab-nlb"
   internal                   = false
   load_balancer_type         = "network"
-  subnets                    = var.subnets
+  subnets                    = var.public_subnets
   security_groups            = [var.nlb_sec_group_id]
   enable_deletion_protection = false
   # enable_cross_zone_load_balancing = true
@@ -28,7 +28,8 @@ resource "aws_lb_target_group" "gitlab_nlb_alb_target" {
 
   health_check {
     protocol = "HTTPS"
-    path     = "/-/readiness"
+    port     = 443
+    path     = "/-/health"
     matcher  = "200-399"
     interval = 30
   }
@@ -73,10 +74,10 @@ resource "aws_lb_listener" "gitlab_nlb_ssh_listener" {
 
 resource "aws_lb" "gitlab_alb" {
   name                       = "gitlab-alb"
-  internal                   = false
+  internal                   = true
   load_balancer_type         = "application"
   security_groups            = [var.alb_sec_group_id]
-  subnets                    = var.subnets
+  subnets                    = var.private_subnets
   ip_address_type            = "ipv4"
   enable_deletion_protection = false
 
@@ -86,6 +87,12 @@ resource "aws_lb" "gitlab_alb" {
     prefix  = "alb"
   }
 
+  # dynamic "subnet_mapping" {
+  #   for_each = var.private_subnets
+  #   content {
+  #     subnet_id = subnet_mapping.value
+  #   }
+  # }
 
   tags = {
     Name = " gitlab-alb"
@@ -102,7 +109,7 @@ resource "aws_lb_target_group" "gitlab_alb_http_target" {
 
   health_check {
     protocol = "HTTP"
-    path     = "/-/readiness"
+    path     = "/-/health"
     matcher  = "200-399"
     interval = 30
   }
@@ -118,6 +125,13 @@ resource "aws_lb_listener" "gitlab_alb_https_listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.gitlab_alb_http_target.arn
   }
+}
+
+resource "aws_lb_target_group_attachment" "gitlab_nlb_alb_attachment" {
+  target_group_arn = aws_lb_target_group.gitlab_nlb_alb_target.arn
+  target_id        = aws_lb.gitlab_alb.arn
+  port             = 443
+  depends_on       = [aws_lb_listener.gitlab_alb_https_listener]
 }
 
 data "aws_lb_hosted_zone_id" "gitlab_alb" {

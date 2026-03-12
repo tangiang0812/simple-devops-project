@@ -21,11 +21,11 @@ data "aws_ami" "gitlab_rails_ami" {
 
 
 resource "aws_instance" "gitlab_rails_instance" {
-  ami           = data.aws_ami.gitlab_rails_ami.id
-  instance_type = "t3.micro"
-  # instance_type = "c5.2xlarge"
-  # iam_instance_profile        = var.iam_instance_profile_id
+  ami = data.aws_ami.gitlab_rails_ami.id
+  # instance_type = "t3.micro"
   # default user for gitlab-rails-instance is ubuntu, ssh
+  instance_type               = "m7i-flex.large"
+  iam_instance_profile        = var.bastion_instance_profile_id
   subnet_id                   = var.private_subnets[0]
   key_name                    = aws_key_pair.bastion_key_pair.key_name
   associate_public_ip_address = false
@@ -33,6 +33,8 @@ resource "aws_instance" "gitlab_rails_instance" {
   credit_specification {
     cpu_credits = "standard"
   }
+
+  user_data = file("${path.module}/user_data_stage_5.sh")
 
   tags = {
     Name = "gitlab-rails-instance"

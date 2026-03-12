@@ -22,7 +22,8 @@ module "loadbalancer" {
   source                = "../../modules/loadbalancer"
   nlb_sec_group_id      = module.security.gitlab_nlb_sec_group.id
   alb_sec_group_id      = module.security.gitlab_alb_sec_group.id
-  subnets               = module.network.public_subnets
+  public_subnets        = module.network.public_subnets
+  private_subnets       = module.network.private_subnets
   vpc_id                = module.network.vpc_id
   health_logs_bucket_id = module.s3.health_logs_bucket_id
   alb_cert_arn          = module.certificates.gitlab_alb_cert_arn
@@ -63,4 +64,15 @@ module "compute" {
   private_subnets             = module.network.private_subnets
   public_subnets              = module.network.public_subnets
   bastion_instance_profile_id = module.iam.bastion_instance_profile_id
+  depends_on                  = [module.configstore]
+}
+
+module "configstore" {
+  source                = "../../modules/configstore"
+  gitlab_db_user        = var.gitlab_db_user
+  gitlab_db_password    = var.gitlab_db_password
+  gitlab_db_name        = var.gitlab_db_name
+  domain_name           = var.domain_name
+  gitlab_db_endpoint    = module.database.db_endpoint
+  gitlab_redis_endpoint = module.cache.gitlab_redis_endpoint
 }

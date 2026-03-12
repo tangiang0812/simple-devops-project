@@ -7,8 +7,13 @@ variable "alb_sec_group_id" {
   type        = string
 }
 
-variable "subnets" {
-  description = "List of subnet IDs to associate with the load balancer."
+variable "public_subnets" {
+  description = "List of public subnet IDs to associate with the application load balancer."
+  type        = list(string)
+}
+
+variable "private_subnets" {
+  description = "List of private subnet IDs to associate with the application load balancer."
   type        = list(string)
 }
 

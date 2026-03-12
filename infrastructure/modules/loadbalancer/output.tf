@@ -27,3 +27,8 @@ output "nlb_hosted_zone_id" {
   description = "Hosted zone ID of the load balancer."
   value       = data.aws_lb_hosted_zone_id.gitlab_nlb.id
 }
+
+# output "alb_private_ip_addresses" {
+#   description = "Private IP addresses of the load balancer."
+#   value       = aws_lb.gitlab_alb.subnet_mapping[*].private_ip_address
+# }
