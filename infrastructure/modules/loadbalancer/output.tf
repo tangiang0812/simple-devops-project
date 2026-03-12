@@ -32,3 +32,8 @@ output "gitlab_alb_http_target_group_arn" {
   description = "ARN of the GitLab ALB HTTP target group."
   value       = aws_lb_target_group.gitlab_alb_http_target.arn
 }
+
+output "gitlab_nlb_ssh_target_group_arn" {
+  description = "ARN of the GitLab NLB SSH target group."
+  value       = aws_lb_target_group.gitlab_nlb_ssh_target.arn
+}

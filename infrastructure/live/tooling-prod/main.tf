@@ -64,7 +64,9 @@ module "compute" {
   private_subnets                   = module.network.private_subnets
   public_subnets                    = module.network.public_subnets
   bastion_instance_profile_id       = module.iam.bastion_instance_profile_id
+  bastion_instance_profile_arn      = module.iam.bastion_instance_profile_arn
   gitlab_alb_http_target_group_arn  = module.loadbalancer.gitlab_alb_http_target_group_arn
+  gitlab_nlb_ssh_target_group_arn   = module.loadbalancer.gitlab_nlb_ssh_target_group_arn
   gitlab_rails_instance_profile_arn = module.iam.bastion_instance_profile_arn
   depends_on                        = [module.configstore]
 }

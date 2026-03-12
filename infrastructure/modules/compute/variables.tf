@@ -32,3 +32,13 @@ variable "gitlab_alb_http_target_group_arn" {
   description = "ARN of the GitLab ALB HTTP target group."
   type        = string
 }
+
+variable "gitlab_nlb_ssh_target_group_arn" {
+  description = "ARN of the GitLab NLB SSH target group."
+  type        = string
+}
+
+variable "bastion_instance_profile_arn" {
+  description = "IAM instance profile ARN for the bastion host."
+  type        = string
+}

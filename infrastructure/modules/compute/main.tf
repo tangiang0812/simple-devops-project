@@ -108,58 +108,110 @@ data "aws_ami" "amazon_linux" {
   owners = ["137112412989"] # Canonical
 }
 
-# This is used without autoscaling group
-resource "aws_instance" "bastion_host_a" {
-  ami                         = data.aws_ami.amazon_linux.id
-  instance_type               = "t3.micro"
-  iam_instance_profile        = var.bastion_instance_profile_id
-  subnet_id                   = var.private_subnets[0]
-  associate_public_ip_address = false
-  vpc_security_group_ids      = [var.bastion_host_sec_group]
-  key_name                    = aws_key_pair.bastion_key_pair.key_name
+# Bastion host ASG and launch template
+resource "aws_autoscaling_group" "bastion_asg" {
+  name                = "bastion-host-asg"
+  desired_capacity    = 3
+  max_size            = 3
+  min_size            = 3
+  vpc_zone_identifier = var.private_subnets
+  target_group_arns   = [var.gitlab_nlb_ssh_target_group_arn]
+
+  health_check_type = "EC2"
+
+  launch_template {
+    id      = aws_launch_template.bastion_launch_template.id
+    version = "$Latest"
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "bastion-host"
+    propagate_at_launch = true
+  }
+}
+
+resource "aws_launch_template" "bastion_launch_template" {
+  name_prefix   = "bastion-launch-template"
+  image_id      = data.aws_ami.amazon_linux.id
+  instance_type = "t3.micro"
+  key_name      = aws_key_pair.bastion_key_pair.key_name
+
+  iam_instance_profile {
+    arn = var.bastion_instance_profile_arn
+  }
+
+  network_interfaces {
+    associate_public_ip_address = false
+    security_groups = [
+      var.bastion_host_sec_group
+    ]
+  }
+
   credit_specification {
     cpu_credits = "standard"
   }
 
-  tags = {
-    Name = "Bastion Host A"
+  tag_specifications {
+    resource_type = "instance"
+
+    tags = {
+      Name = "Bastion Host"
+    }
   }
 }
 
 # This is used without autoscaling group
-resource "aws_instance" "bastion_host_b" {
-  ami                         = data.aws_ami.amazon_linux.id
-  instance_type               = "t3.micro"
-  iam_instance_profile        = var.bastion_instance_profile_id
-  subnet_id                   = var.private_subnets[1]
-  associate_public_ip_address = false
-  vpc_security_group_ids      = [var.bastion_host_sec_group]
-  key_name                    = aws_key_pair.bastion_key_pair.key_name
-  credit_specification {
-    cpu_credits = "standard"
-  }
+# resource "aws_instance" "bastion_host_a" {
+#   ami                         = data.aws_ami.amazon_linux.id
+#   instance_type               = "t3.micro"
+#   iam_instance_profile        = var.bastion_instance_profile_id
+#   subnet_id                   = var.private_subnets[0]
+#   associate_public_ip_address = false
+#   vpc_security_group_ids      = [var.bastion_host_sec_group]
+#   key_name                    = aws_key_pair.bastion_key_pair.key_name
+#   credit_specification {
+#     cpu_credits = "standard"
+#   }
 
-  tags = {
-    Name = "Bastion Host B"
-  }
-}
+#   tags = {
+#     Name = "Bastion Host A"
+#   }
+# }
 
-resource "aws_instance" "bastion_host_c" {
-  ami                         = data.aws_ami.amazon_linux.id
-  instance_type               = "t3.micro"
-  iam_instance_profile        = var.bastion_instance_profile_id
-  subnet_id                   = var.private_subnets[2]
-  associate_public_ip_address = false
-  vpc_security_group_ids      = [var.bastion_host_sec_group]
-  key_name                    = aws_key_pair.bastion_key_pair.key_name
-  credit_specification {
-    cpu_credits = "standard"
-  }
+# resource "aws_instance" "bastion_host_b" {
+#   ami                         = data.aws_ami.amazon_linux.id
+#   instance_type               = "t3.micro"
+#   iam_instance_profile        = var.bastion_instance_profile_id
+#   subnet_id                   = var.private_subnets[1]
+#   associate_public_ip_address = false
+#   vpc_security_group_ids      = [var.bastion_host_sec_group]
+#   key_name                    = aws_key_pair.bastion_key_pair.key_name
+#   credit_specification {
+#     cpu_credits = "standard"
+#   }
 
-  tags = {
-    Name = "Bastion Host C"
-  }
-}
+#   tags = {
+#     Name = "Bastion Host B"
+#   }
+# }
+
+# resource "aws_instance" "bastion_host_c" {
+#   ami                         = data.aws_ami.amazon_linux.id
+#   instance_type               = "t3.micro"
+#   iam_instance_profile        = var.bastion_instance_profile_id
+#   subnet_id                   = var.private_subnets[2]
+#   associate_public_ip_address = false
+#   vpc_security_group_ids      = [var.bastion_host_sec_group]
+#   key_name                    = aws_key_pair.bastion_key_pair.key_name
+#   credit_specification {
+#     cpu_credits = "standard"
+#   }
+
+#   tags = {
+#     Name = "Bastion Host C"
+#   }
+# }
 
 resource "aws_key_pair" "bastion_key_pair" {
   key_name = "bastion-key-pair"
