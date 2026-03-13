@@ -79,4 +79,5 @@ module "configstore" {
   domain_name           = var.domain_name
   gitlab_db_endpoint    = module.database.db_endpoint
   gitlab_redis_endpoint = module.cache.gitlab_redis_endpoint
+  gitlab_rails_password = var.gitlab_rails_password
 }

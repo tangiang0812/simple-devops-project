@@ -1,11 +1,11 @@
 #!/bin/bash -xe
 
-apt update && apt upgrade -y
-# apt update -y
-apt install -y unzip curl
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-./aws/install
+# move this to packer AMI installation stage
+# apt update && apt upgrade -y
+# apt install -y unzip
+# curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+# unzip awscliv2.zip
+# ./aws/install
 
 TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
 -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
@@ -34,6 +34,12 @@ REDIS_ENDPOINT=$(echo $REDIS_ENDPOINT | sed -e 's/^"//' -e 's/"$//')
 DOMAIN=$(aws ssm get-parameters --region us-east-1 --names /gitlab/domain_name --query Parameters[0].Value)
 DOMAIN=$(echo $DOMAIN | sed -e 's/^"//' -e 's/"$//')
 
+DB_PASSWORD=$(aws ssm get-parameters --region us-east-1 --names /gitlab/postgresql/db_password --with-decryption --query Parameters[0].Value)
+DB_PASSWORD=$(echo $DB_PASSWORD | sed -e 's/^"//' -e 's/"$//')
+
+RAILS_PASSWORD=$(aws ssm get-parameters --region us-east-1 --names /gitlab/rails/rails_password --with-decryption --query Parameters[0].Value)
+RAILS_PASSWORD=$(echo $RAILS_PASSWORD | sed -e 's/^"//' -e 's/"$//')
+
 FILE="/etc/gitlab/gitlab.rb"
 
 cp "$FILE" "$FILE.bak"
@@ -57,6 +63,7 @@ sed -i \
 -e "s|^#\?\s*gitlab_sshd\['enable'\].*|gitlab_sshd['enable'] = true|" \
 -e "s|^#\?\s*gitlab_sshd\['listen_address'\].*|gitlab_sshd['listen_address'] = '[::]:2222'|" \
 -e "s|^#\?\s*gitlab_rails\['monitoring_whitelist'\].*|gitlab_rails['monitoring_whitelist'] = ['0.0.0.0/0']|" \
+-e "s|^#\?\s*gitlab_rails\['initial_root_password'\].*|gitlab_rails['initial_root_password'] = \"$RAILS_PASSWORD\"|" \
 "$FILE"
 
 export PGPASSWORD="$DB_PASSWORD"

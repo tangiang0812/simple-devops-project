@@ -1,24 +1,33 @@
+# data "aws_ami" "gitlab_rails_ami" {
+#   most_recent = true
+
+#   owners = ["782774275127"]
+
+#   filter {
+#     name   = "name"
+#     values = ["GitLab CE 17.11.7*"]
+#   }
+
+#   filter {
+#     name   = "architecture"
+#     values = ["x86_64"]
+#   }
+
+#   filter {
+#     name   = "virtualization-type"
+#     values = ["hvm"]
+#   }
+# }
+
 data "aws_ami" "gitlab_rails_ami" {
   most_recent = true
-
-  owners = ["782774275127"]
+  owners      = ["self"]
 
   filter {
     name   = "name"
-    values = ["GitLab CE 17.11.7*"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
+    values = ["gitlab-rails-custom-*"]
   }
 }
-
 
 # resource "aws_instance" "gitlab_rails_instance" {
 #   ami = data.aws_ami.gitlab_rails_ami.id

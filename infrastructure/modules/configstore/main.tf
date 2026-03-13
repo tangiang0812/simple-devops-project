@@ -60,6 +60,15 @@ resource "aws_ssm_parameter" "gitlab_redis_endpoint" {
 
 }
 
+resource "aws_ssm_parameter" "gitlab_rails_password" {
+  name      = "/gitlab/rails/rails_password"
+  type      = "SecureString"
+  data_type = "text"
+  value     = var.gitlab_rails_password
+  tier      = "Standard"
+  overwrite = true
+}
+
 resource "aws_ssm_parameter" "cw_agent_config" {
   name      = "/cwagent/config"
   type      = "String"

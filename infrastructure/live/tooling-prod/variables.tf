@@ -33,3 +33,10 @@ variable "gitlab_db_name" {
   default     = "gitlabhq_production"
   type        = string
 }
+
+variable "gitlab_rails_password" {
+  description = "Password for the GitLab Rails application."
+  default     = "4n1m4l54L1f3"
+  type        = string
+  sensitive   = true
+}

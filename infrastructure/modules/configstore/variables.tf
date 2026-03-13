@@ -34,3 +34,9 @@ variable "gitlab_redis_endpoint" {
   description = "The hostname or endpoint of the Redis instance for GitLab to store in SSM Parameter Store."
   type        = string
 }
+
+variable "gitlab_rails_password" {
+  description = "The password for the GitLab Rails application to store in SSM Parameter Store."
+  type        = string
+  sensitive   = true
+}
