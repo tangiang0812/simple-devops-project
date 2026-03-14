@@ -45,7 +45,7 @@ FILE="/etc/gitlab/gitlab.rb"
 cp "$FILE" "$FILE.bak"
 
 sed -i \
--e "s|^#\?\s*external_url .*|external_url 'https://$DOMAIN'|" \
+-e "s|^#\?\s*external_url .*|external_url 'https://gitlab.$DOMAIN'|" \
 -e "s|^#\?\s*letsencrypt\['enable'\].*|letsencrypt['enable'] = false|" \
 -e "s|^#\?\s*postgresql\['enable'\].*|postgresql['enable'] = false|" \
 -e "s|^#\?\s*gitlab_rails\['db_adapter'\].*|gitlab_rails['db_adapter'] = \"postgresql\"|" \

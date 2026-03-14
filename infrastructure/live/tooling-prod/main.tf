@@ -1,8 +1,5 @@
-data "aws_availability_zones" "available" {}
-
 module "network" {
-  source              = "../../modules/network"
-  available_azs_names = slice(data.aws_availability_zones.available.names, 0, 3)
+  source = "../../modules/network"
 }
 
 module "iam" {
@@ -79,5 +76,5 @@ module "configstore" {
   domain_name           = var.domain_name
   gitlab_db_endpoint    = module.database.db_endpoint
   gitlab_redis_endpoint = module.cache.gitlab_redis_endpoint
-  gitlab_rails_password = var.gitlab_rails_password
+  gitlab_rails_password = var.gitlab_root_password
 }

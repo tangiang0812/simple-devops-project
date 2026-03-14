@@ -52,8 +52,8 @@ data "aws_ami" "gitlab_rails_ami" {
 
 resource "aws_autoscaling_group" "gitlab_rails_asg" {
   name                      = "gitlab-rails-autoscale-group"
-  desired_capacity          = 3
-  max_size                  = 5
+  desired_capacity          = 2
+  max_size                  = 3
   min_size                  = 1
   vpc_zone_identifier       = var.private_subnets
   target_group_arns         = [var.gitlab_alb_http_target_group_arn]
@@ -120,9 +120,9 @@ data "aws_ami" "amazon_linux" {
 # Bastion host ASG and launch template
 resource "aws_autoscaling_group" "bastion_asg" {
   name                = "bastion-host-asg"
-  desired_capacity    = 3
-  max_size            = 3
-  min_size            = 3
+  desired_capacity    = 2
+  max_size            = 2
+  min_size            = 2
   vpc_zone_identifier = var.private_subnets
   target_group_arns   = [var.gitlab_nlb_ssh_target_group_arn]
 

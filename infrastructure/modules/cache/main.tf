@@ -6,7 +6,7 @@ resource "aws_elasticache_replication_group" "gitlab_redis" {
   engine_version             = "7.0"
   node_type                  = "cache.t3.micro"
   port                       = 6379
-  num_cache_clusters         = 3
+  num_cache_clusters         = 2
   multi_az_enabled           = true
   automatic_failover_enabled = true
   subnet_group_name          = var.elasticache_subnet_group_name

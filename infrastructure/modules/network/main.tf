@@ -1,12 +1,16 @@
+data "aws_availability_zones" "available" {}
+
+locals { available_azs_names = slice(data.aws_availability_zones.available.names, 0, 2) }
+
 locals {
   private_subnet_tags_per_az = {
-    for az in var.available_azs_names :
+    for az in local.available_azs_names :
     az => {
       Name = "gitlab-private-${az}-10.16.0.0"
     }
   }
   public_subnet_tags_per_az = {
-    for az in var.available_azs_names :
+    for az in local.available_azs_names :
     az => {
       Name = "gitlab-public-${az}-10.16.0.0"
     }
@@ -19,16 +23,24 @@ module "vpc" {
 
   name                   = "gitlab-vpc"
   cidr                   = "10.16.0.0/16"
-  azs                    = var.available_azs_names
+  azs                    = local.available_azs_names
   enable_nat_gateway     = true
   one_nat_gateway_per_az = true
   single_nat_gateway     = false
-  elasticache_subnets    = ["10.16.64.0/20", "10.16.128.0/20", "10.16.192.0/20"]
-  public_subnets         = ["10.16.48.0/20", "10.16.112.0/20", "10.16.176.0/20"]
-  private_subnets        = ["10.16.32.0/20", "10.16.96.0/20", "10.16.160.0/20"]
-  database_subnets       = ["10.16.16.0/20", "10.16.80.0/20", "10.16.144.0/20"]
   enable_dns_hostnames   = true
   enable_dns_support     = true
+
+  elasticache_subnets = ["10.16.64.0/20", "10.16.128.0/20"]
+  public_subnets      = ["10.16.48.0/20", "10.16.112.0/20"]
+  private_subnets     = ["10.16.32.0/20", "10.16.96.0/20"]
+  database_subnets    = ["10.16.16.0/20", "10.16.80.0/20"]
+
+  # elasticache_subnets = ["10.16.64.0/20", "10.16.128.0/20", "10.16.192.0/20"]
+  # public_subnets      = ["10.16.48.0/20", "10.16.112.0/20", "10.16.176.0/20"]
+  # private_subnets     = ["10.16.32.0/20", "10.16.96.0/20", "10.16.160.0/20"]
+  # database_subnets    = ["10.16.16.0/20", "10.16.80.0/20", "10.16.144.0/20"]
+
+
   tags = {
     Name = "gitlab-vpc"
   }
