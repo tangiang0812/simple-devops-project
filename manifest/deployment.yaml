@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ops-inspiration-console-app
+  namespace: ops-inspiration-console
+  labels:
+    app: ops-inspiration-console-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ops-inspiration-console-app
+  template:
+    metadata:
+      labels:
+        app: ops-inspiration-console-app
+    spec:
+      containers:
+        - name: go-container
+          image: 583857255987.dkr.ecr.us-east-1.amazonaws.com/ops-inspiration-console:a7744808 
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
