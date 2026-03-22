@@ -125,13 +125,13 @@ resource "aws_lb_listener" "gitlab_alb_https_listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.gitlab_alb_http_target.arn
   }
+  # depends_on = [aws_lb_target_group_attachment.gitlab_nlb_alb_attachment]
 }
 
 resource "aws_lb_target_group_attachment" "gitlab_nlb_alb_attachment" {
   target_group_arn = aws_lb_target_group.gitlab_nlb_alb_target.arn
   target_id        = aws_lb.gitlab_alb.arn
-  port             = 443
-  depends_on       = [aws_lb_listener.gitlab_alb_https_listener]
+  port             = aws_lb_listener.gitlab_alb_https_listener.port
 }
 
 data "aws_lb_hosted_zone_id" "gitlab_alb" {

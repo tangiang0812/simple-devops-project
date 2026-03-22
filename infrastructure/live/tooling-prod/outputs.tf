@@ -21,3 +21,7 @@ output "gitlab_redis_endpoint" {
 output "route53_zone_id" {
   value = module.dns.zone_id
 }
+
+output "ecr_repository_url" {
+  value = module.ecr.repository_url
+}

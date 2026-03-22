@@ -1,7 +1,7 @@
-resource "aws_iam_policy" "gl-s3-access-policy" {
-  name        = "gl-s3-access-policy"
+resource "aws_iam_policy" "gitlab_rails_s3_access_policy" {
+  name        = "gitlab-rails-s3-access-policy"
   path        = "/"
-  description = "Allow S3 object and bucket operations for gl-* buckets"
+  description = "Allow S3 object and bucket operations for gitlab-* buckets"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -14,7 +14,7 @@ resource "aws_iam_policy" "gl-s3-access-policy" {
           "s3:DeleteObject",
           "s3:PutObjectAcl",
         ]
-        Resource = "arn:aws:s3:::gl-*/*"
+        Resource = "arn:aws:s3:::gitlab-*/*"
       },
       {
         Effect = "Allow"
@@ -24,14 +24,14 @@ resource "aws_iam_policy" "gl-s3-access-policy" {
           "s3:ListMultipartUploadParts",
           "s3:ListBucketMultipartUploads",
         ]
-        Resource = "arn:aws:s3:::gl-*"
+        Resource = "arn:aws:s3:::gitlab-*"
       },
     ]
   })
 }
 
-resource "aws_iam_role" "gl-s3-access" {
-  name = "gl-s3-access"
+resource "aws_iam_role" "gitlab_rails_role" {
+  name = "gitlab_rails_role"
 
   # Terraform's "jsonencode" function converts a
   # Terraform expression result to valid JSON syntax.
@@ -51,8 +51,38 @@ resource "aws_iam_role" "gl-s3-access" {
   path = "/"
 
   tags = {
-    Name = "gl-s3-access"
+    Name = "gitlab_rails_role"
   }
+}
+
+resource "aws_iam_role_policy_attachment" "gitlab_rails_s3_access_attachment" {
+  role       = aws_iam_role.gitlab_rails_role.name
+  policy_arn = aws_iam_policy.gitlab_rails_s3_access_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "gitlab_rails_ssm_access" {
+  role       = aws_iam_role.gitlab_rails_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "gitlab_rails_ecr_access" {
+  role       = aws_iam_role.gitlab_rails_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
+}
+
+# resource "aws_iam_role_policy_attachment" "gitlab_rails_asg_readonly" {
+#   role       = aws_iam_role.gitlab_rails_role.name
+#   policy_arn = "arn:aws:iam::aws:policy/AutoScalingReadOnlyAccess"
+# }
+
+# resource "aws_iam_role_policy_attachment" "gitlab_rails_ec2_readonly" {
+#   role       = aws_iam_role.gitlab_rails_role.name
+#   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+# }
+
+resource "aws_iam_instance_profile" "gitlab_rails_instance_profile" {
+  name = "gitlab_rails_instance_profile"
+  role = aws_iam_role.gitlab_rails_role.name
 }
 
 resource "aws_iam_role" "bastion_role" {

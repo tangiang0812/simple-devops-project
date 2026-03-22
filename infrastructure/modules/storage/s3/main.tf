@@ -1,8 +1,33 @@
-resource "aws_s3_bucket" "health_logs" {
-  bucket        = "a4l-health-check-logs-123456"
+
+locals {
+  gitlab_buckets = [
+    "gitlab-artifacts",
+    "gitlab-mr-diffs",
+    "gitlab-lfs",
+    "gitlab-uploads",
+    "gitlab-packages",
+    "gitlab-dependency-proxy",
+    "gitlab-terraform-state",
+    "gitlab-ci-secure-files",
+    "gitlab-pages"
+  ]
+}
+
+resource "aws_s3_bucket" "gitlab" {
+  for_each = toset(local.gitlab_buckets)
+
+  bucket        = "${each.value}-fjal"
   force_destroy = true
   tags = {
-    Name = "health-check-logs"
+    Name = each.value
+  }
+}
+
+resource "aws_s3_bucket" "health_logs" {
+  bucket        = "gitlab-alb-health-check-logs-fjal"
+  force_destroy = true
+  tags = {
+    Name = "alb-health-check-logs"
   }
 }
 

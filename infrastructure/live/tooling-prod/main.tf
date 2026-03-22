@@ -64,7 +64,7 @@ module "compute" {
   bastion_instance_profile_arn      = module.iam.bastion_instance_profile_arn
   gitlab_alb_http_target_group_arn  = module.loadbalancer.gitlab_alb_http_target_group_arn
   gitlab_nlb_ssh_target_group_arn   = module.loadbalancer.gitlab_nlb_ssh_target_group_arn
-  gitlab_rails_instance_profile_arn = module.iam.bastion_instance_profile_arn
+  gitlab_rails_instance_profile_arn = module.iam.gitlab_rails_instance_profile_arn
   depends_on                        = [module.configstore]
 }
 
@@ -77,4 +77,68 @@ module "configstore" {
   gitlab_db_endpoint    = module.database.db_endpoint
   gitlab_redis_endpoint = module.cache.gitlab_redis_endpoint
   gitlab_rails_password = var.gitlab_root_password
+}
+
+module "ecr" {
+  source = "../../modules/ecr"
+}
+
+module "eks_al2023" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 21.0"
+
+  name                                     = "ops-inspiration-console"
+  kubernetes_version                       = "1.33"
+  endpoint_public_access                   = true
+  enable_cluster_creator_admin_permissions = true
+
+  # EKS Addons
+  addons = {
+    coredns = {}
+    eks-pod-identity-agent = {
+      before_compute = true
+    }
+    kube-proxy = {}
+    vpc-cni = {
+      before_compute = true
+    }
+  }
+
+  vpc_id     = module.network.vpc_id
+  subnet_ids = module.network.private_subnets
+
+  eks_managed_node_groups = {
+    example = {
+      # Starting on 1.30, AL2023 is the default AMI type for EKS managed node groups
+      instance_types = ["m7i-flex.large"]
+      ami_type       = "AL2023_x86_64_STANDARD"
+
+      min_size = 2
+      max_size = 5
+      # This value is ignored after the initial creation
+      # https://github.com/bryantbiggs/eks-desired-size-hack
+      desired_size = 2
+
+      # This is not required - demonstrates how to pass additional configuration to nodeadm
+      # Ref https://awslabs.github.io/amazon-eks-ami/nodeadm/doc/api/
+      # cloudinit_pre_nodeadm = [
+      #   {
+      #     content_type = "application/node.eks.aws"
+      #     content      = <<-EOT
+      #       ---
+      #       apiVersion: node.eks.aws/v1alpha1
+      #       kind: NodeConfig
+      #       spec:
+      #         kubelet:
+      #           config:
+      #             shutdownGracePeriod: 30s
+      #     EOT
+      #   }
+      # ]
+    }
+  }
+
+  tags = {
+    Name = "ops-inspiration-console"
+  }
 }
