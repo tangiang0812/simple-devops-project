@@ -1,13 +1,15 @@
 #!/bin/bash -xe
 
-TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
--H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+# usermod -s /bin/bash ssm-user
 
-ROLE=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
-"http://169.254.169.254/latest/meta-data/iam/security-credentials/")
+# TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
+# -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 
-curl -H "X-aws-ec2-metadata-token: $TOKEN" \
-"http://169.254.169.254/latest/meta-data/iam/security-credentials/$ROLE"
+# ROLE=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
+# "http://169.254.169.254/latest/meta-data/iam/security-credentials/")
+
+# curl -H "X-aws-ec2-metadata-token: $TOKEN" \
+# "http://169.254.169.254/latest/meta-data/iam/security-credentials/$ROLE"
 
 DB_PASSWORD=$(aws ssm get-parameters --region us-east-1 --names /gitlab/postgresql/db_password --with-decryption --query Parameters[0].Value)
 DB_PASSWORD=$(echo $DB_PASSWORD | sed -e 's/^"//' -e 's/"$//')
@@ -77,15 +79,15 @@ gitlab_rails['object_store']['storage_options'] = {
   'server_side_encryption' => 'AES256',
 }
 
-gitlab_rails['object_store']['objects']['artifacts']['bucket'] = 'gitlab-artifacts-fjal'
-gitlab_rails['object_store']['objects']['external_diffs']['bucket'] = 'gitlab-mr-diffs-fjal'
-gitlab_rails['object_store']['objects']['lfs']['bucket'] = 'gitlab-lfs-fjal'
-gitlab_rails['object_store']['objects']['uploads']['bucket'] = 'gitlab-uploads-fjal'
-gitlab_rails['object_store']['objects']['packages']['bucket'] = 'gitlab-packages-fjal'
-gitlab_rails['object_store']['objects']['dependency_proxy']['bucket'] = 'gitlab-dependency-proxy-fjal'
-gitlab_rails['object_store']['objects']['terraform_state']['bucket'] = 'gitlab-terraform-state-fjal'
-gitlab_rails['object_store']['objects']['ci_secure_files']['bucket'] = 'gitlab-ci-secure-files-fjal'
-gitlab_rails['object_store']['objects']['pages']['bucket'] = 'gitlab-pages-fjal'
+gitlab_rails['object_store']['objects']['artifacts']['bucket'] = 'gitlab-artifacts-gnaig'
+gitlab_rails['object_store']['objects']['external_diffs']['bucket'] = 'gitlab-mr-diffs-gnaig'
+gitlab_rails['object_store']['objects']['lfs']['bucket'] = 'gitlab-lfs-gnaig'
+gitlab_rails['object_store']['objects']['uploads']['bucket'] = 'gitlab-uploads-gnaig'
+gitlab_rails['object_store']['objects']['packages']['bucket'] = 'gitlab-packages-gnaig'
+gitlab_rails['object_store']['objects']['dependency_proxy']['bucket'] = 'gitlab-dependency-proxy-gnaig'
+gitlab_rails['object_store']['objects']['terraform_state']['bucket'] = 'gitlab-terraform-state-gnaig'
+gitlab_rails['object_store']['objects']['ci_secure_files']['bucket'] = 'gitlab-ci-secure-files-gnaig'
+gitlab_rails['object_store']['objects']['pages']['bucket'] = 'gitlab-pages-gnaig'
 
 gitlab_rails['auto_migrate'] = true
 EOF

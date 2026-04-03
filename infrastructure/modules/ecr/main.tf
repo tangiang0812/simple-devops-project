@@ -1,12 +1,22 @@
-resource "aws_ecr_repository" "osp_inspiration_ecr_repository" {
-  name                 = "ops-inspiration-console"
-  image_tag_mutability = "IMMUTABLE_WITH_EXCLUSION"
+locals {
+  use_exclusion = contains([
+    "MUTABLE_WITH_EXCLUSION",
+    "IMMUTABLE_WITH_EXCLUSION"
+  ], var.image_tag_mutability)
+}
 
-  force_delete = true
+resource "aws_ecr_repository" "repository" {
+  name                 = var.name
+  image_tag_mutability = var.image_tag_mutability
 
-  image_tag_mutability_exclusion_filter {
-    filter_type = "WILDCARD"
-    filter      = "latest"
+  force_delete = var.force_delete
+
+  dynamic "image_tag_mutability_exclusion_filter" {
+    for_each = local.use_exclusion ? [1] : []
+    content {
+      filter_type = "WILDCARD"
+      filter      = "latest"
+    }
   }
 
   image_scanning_configuration {
@@ -17,23 +27,23 @@ resource "aws_ecr_repository" "osp_inspiration_ecr_repository" {
     encryption_type = "AES256"
   }
 
-  tags = {
-    Name = "ops-inspriration-ecr-repository"
-  }
+  tags = merge({
+    Name = "${var.name}-ecr"
+  }, var.tags)
 }
 
-resource "aws_ecr_lifecycle_policy" "osp_inspiration_ecr_lifecycle_policy" {
-  repository = aws_ecr_repository.osp_inspiration_ecr_repository.name
+resource "aws_ecr_lifecycle_policy" "lifecycle_policy" {
+  repository = aws_ecr_repository.repository.name
 
   policy = jsonencode({
     rules = [
       {
         rulePriority = 1
-        description  = "Keep last 10 images"
+        description  = "Keep last ${var.lifecycle_max_images} images"
         selection = {
           tagStatus   = "any"
           countType   = "imageCountMoreThan"
-          countNumber = 10
+          countNumber = var.lifecycle_max_images
         }
         action = {
           type = "expire"

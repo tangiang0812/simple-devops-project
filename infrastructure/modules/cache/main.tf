@@ -1,16 +1,32 @@
-resource "aws_elasticache_replication_group" "gitlab_redis" {
-  replication_group_id = "gitlab-redis"
-  description          = "GitLab Redis replication group"
+resource "aws_security_group" "cache" {
+  name        = "${var.name}-cache-sg"
+  description = "Security group for ${var.name} Redis cluster"
+  vpc_id      = var.vpc_id
+}
+
+resource "aws_vpc_security_group_ingress_rule" "cache_from_app" {
+  count                        = var.ingress_source_security_group_id != null ? 1 : 0
+  security_group_id            = aws_security_group.cache.id
+  referenced_security_group_id = var.ingress_source_security_group_id
+  from_port                    = 6379
+  to_port                      = 6379
+  ip_protocol                  = "tcp"
+}
+
+
+resource "aws_elasticache_replication_group" "cache" {
+  replication_group_id = var.replication_group_id
+  description          = var.description
 
   engine                     = "redis"
   engine_version             = "7.0"
-  node_type                  = "cache.t3.micro"
+  node_type                  = var.node_type
   port                       = 6379
-  num_cache_clusters         = 2
-  multi_az_enabled           = true
-  automatic_failover_enabled = true
+  num_cache_clusters         = var.number_cache_clusters
+  multi_az_enabled           = var.multi_az_enabled
+  automatic_failover_enabled = var.automatic_failover_enabled
   subnet_group_name          = var.elasticache_subnet_group_name
-  security_group_ids         = var.security_group_ids
+  security_group_ids         = [aws_security_group.cache.id]
   transit_encryption_enabled = true
   apply_immediately          = true
   transit_encryption_mode    = "preferred"
@@ -19,8 +35,7 @@ resource "aws_elasticache_replication_group" "gitlab_redis" {
     ignore_changes = [num_cache_clusters]
   }
 
-  tags = {
-    Name = "gitlab-redis"
-  }
-
+  tags = merge({
+    Name = "${var.name}-cache"
+  }, var.tags)
 }

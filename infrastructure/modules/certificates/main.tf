@@ -1,11 +1,11 @@
-resource "aws_acm_certificate" "gitlab_alb_cert" {
+resource "aws_acm_certificate" "this" {
   domain_name               = var.domain_name
   subject_alternative_names = ["*.${var.domain_name}"]
   validation_method         = "DNS"
 
-  tags = {
-    Name = "gitlab-alb-cert"
-  }
+  tags = merge({
+    Name = "${var.domain_name}-cert"
+  }, var.tags)
 
   lifecycle {
     create_before_destroy = true
@@ -14,7 +14,7 @@ resource "aws_acm_certificate" "gitlab_alb_cert" {
 
 resource "aws_route53_record" "cert_validation_record" {
   for_each = {
-    for dvo in aws_acm_certificate.gitlab_alb_cert.domain_validation_options : dvo.domain_name => {
+    for dvo in aws_acm_certificate.this.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       record = dvo.resource_record_value
       type   = dvo.resource_record_type
@@ -26,11 +26,11 @@ resource "aws_route53_record" "cert_validation_record" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  zone_id         = var.zone_id
+  zone_id         = var.route53_zone_id
 }
 
 resource "aws_acm_certificate_validation" "cert_validation" {
-  certificate_arn = aws_acm_certificate.gitlab_alb_cert.arn
+  certificate_arn = aws_acm_certificate.this.arn
 
   validation_record_fqdns = [
     for record in aws_route53_record.cert_validation_record :

@@ -3,12 +3,13 @@ variable "domain_name" {
   type        = string
 }
 
-variable "nlb_hosted_zone_id" {
-  description = "Hosted zone ID of the load balancer."
+variable "route53_zone_id" {
+  description = "The ID of the Route 53 hosted zone."
   type        = string
 }
 
-variable "zone_id" {
-  description = "The ID of the Route 53 hosted zone."
-  type        = string
+variable "tags" {
+  description = "A map of tags to assign to the resources."
+  type        = map(string)
+  default     = {}
 }

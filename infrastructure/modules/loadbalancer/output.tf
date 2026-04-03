@@ -1,39 +1,29 @@
-output "alb_target_group_arn" {
-  description = "ARN of the load balancer target group."
-  value       = aws_lb_target_group.gitlab_alb_http_target.arn
+output "lb_arn" {
+  description = "The ARN of the load balancer."
+  value       = aws_lb.this.arn
 }
 
-output "alb_dns_name" {
-  description = "DNS name of the load balancer."
-  value       = aws_lb.gitlab_alb.dns_name
+output "lb_dns_name" {
+  description = "The DNS name of the load balancer."
+  value       = aws_lb.this.dns_name
 }
 
-output "alb_hosted_zone_id" {
-  description = "Hosted zone ID of the load balancer."
-  value       = data.aws_lb_hosted_zone_id.gitlab_alb.id
+output "lb_security_group_id" {
+  description = "The security group ID of the load balancer."
+  value       = aws_security_group.this.id
 }
 
-output "nlb_target_group_arn" {
-  description = "ARN of the load balancer target group."
-  value       = aws_lb_target_group.gitlab_nlb_alb_target.arn
+output "lb_id" {
+  description = "The ID of the load balancer."
+  value       = aws_lb.this.id
 }
 
-output "nlb_dns_name" {
-  description = "DNS name of the load balancer."
-  value       = aws_lb.gitlab_nlb.dns_name
+output "lb_hosted_zone_id" {
+  description = "The hosted zone ID of the load balancer."
+  value       = data.aws_lb_hosted_zone_id.this.id
 }
 
-output "nlb_hosted_zone_id" {
-  description = "Hosted zone ID of the load balancer."
-  value       = data.aws_lb_hosted_zone_id.gitlab_nlb.id
-}
-
-output "gitlab_alb_http_target_group_arn" {
-  description = "ARN of the GitLab ALB HTTP target group."
-  value       = aws_lb_target_group.gitlab_alb_http_target.arn
-}
-
-output "gitlab_nlb_ssh_target_group_arn" {
-  description = "ARN of the GitLab NLB SSH target group."
-  value       = aws_lb_target_group.gitlab_nlb_ssh_target.arn
+output "target_group_arns" {
+  description = "A map of target group ARNs, keyed by target group name."
+  value       = { for k, v in aws_lb_target_group.this : k => v.arn }
 }

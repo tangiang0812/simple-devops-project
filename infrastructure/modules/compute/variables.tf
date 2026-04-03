@@ -1,44 +1,48 @@
-variable "public_subnets" {
-  description = "List of public subnet IDs to launch the EC2 instance in."
+variable "vpc_id" {
+  description = "The ID of the VPC to launch the EC2 instance in."
+  type        = string
+}
+
+variable "subnets" {
+  description = "List of subnet IDs to launch the EC2 instance in."
   type        = list(string)
 }
 
-variable "private_subnets" {
-  description = "List of private subnet IDs to launch the EC2 instance in."
-  type        = list(string)
-}
-
-variable "bastion_host_sec_group" {
-  description = "Security group ID for the bastion host."
+variable "name" {
+  description = "The name of the EC2 instance / Auto Scaling Group."
   type        = string
 }
 
-variable "gitlab_rails_sec_group" {
-  description = "Security group ID for the GitLab Rails instance."
+variable "instance_profile_id" {
+  description = "IAM instance profile ID for intance."
+  type        = string
+  default     = ""
+}
+
+variable "instance_profile_arn" {
+  description = "IAM instance profile ARN for the instance."
   type        = string
 }
 
-variable "bastion_instance_profile_id" {
-  description = "IAM instance profile ID for the bastion host."
+variable "lb_target_group_arn" {
+  description = "ARN of the ALB HTTP target group."
+  type        = string
+  default     = ""
+}
+
+variable "ami_id" {
+  description = "The ID of the AMI to use for the EC2 instance."
   type        = string
 }
 
-variable "gitlab_rails_instance_profile_arn" {
-  description = "IAM instance profile ARN for the GitLab Rails instance."
+variable "user_data" {
+  description = "The user data to provide when launching the EC2 instance."
   type        = string
+  default     = ""
 }
 
-variable "gitlab_alb_http_target_group_arn" {
-  description = "ARN of the GitLab ALB HTTP target group."
-  type        = string
-}
-
-variable "gitlab_nlb_ssh_target_group_arn" {
-  description = "ARN of the GitLab NLB SSH target group."
-  type        = string
-}
-
-variable "bastion_instance_profile_arn" {
-  description = "IAM instance profile ARN for the bastion host."
-  type        = string
+variable "tags" {
+  description = "A map of tags to assign to the EC2 instance and related resources."
+  type        = map(string)
+  default     = {}
 }
