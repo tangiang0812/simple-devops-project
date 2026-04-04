@@ -22,7 +22,7 @@ module "eks_al2023" {
   subnet_ids = local.network.private_subnets
 
   eks_managed_node_groups = {
-    example = {
+    ops_inspiration_console = {
       instance_types = ["m7i-flex.large"]
       ami_type       = "AL2023_x86_64_STANDARD"
 
