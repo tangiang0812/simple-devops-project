@@ -3,6 +3,9 @@ kind: Service
 metadata:
   name: ops-inspiration-console-service
   namespace: ops-inspiration-console
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-name: "ops-inspiration-console-lb"
+    service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: "Project=ops-inspiration-console,Environment=production,Name=ops-inspiration-console-lb"
 spec:
   type: LoadBalancer
   selector:
