@@ -1,1 +1,1 @@
-./gitlab-projects-setup.sh && ./gitlab-runners-setup.sh && ./eks-get-credentials.sh && ./argocd-install.sh && ./argocd-expose.sh && ./gitlab-push-app.sh && ./argocd-setup-app.sh && ./eks-get-alb-urls.sh 
+./gitlab-projects-setup.sh && ./gitlab-runners-setup.sh && ./eks-get-credentials.sh && ./argocd-install.sh && ./gitlab-push-app.sh && ./argocd-setup-app.sh

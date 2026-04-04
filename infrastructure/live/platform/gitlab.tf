@@ -14,7 +14,7 @@ module "alias_dns_record" {
   domain_name          = "gnaig.click"
   subdomain_name       = "gitlab"
   vpc_id               = local.network.vpc_id
-  route53_zone_id      = var.route53_zone_id
+  route53_zone_id      = data.route53_zone.route53_zone.id
   alias_dns_name       = module.gitlab_nlb.lb_dns_name
   alias_hosted_zone_id = module.gitlab_nlb.lb_hosted_zone_id
 
