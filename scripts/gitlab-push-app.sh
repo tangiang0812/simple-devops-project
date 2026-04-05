@@ -6,6 +6,6 @@ git -C "$(git rev-parse --show-toplevel)" subtree push \
   release
 
 git -C "$(git rev-parse --show-toplevel)" subtree push \
-  --prefix=manifest \
+  --prefix=manifest/app \
   https://root:${TF_VAR_gitlab_root_password}@gitlab.gnaig.click/root/ops-inspiration-console-manifest.git \
   release
