@@ -232,7 +232,7 @@ module "gitlab_rails" {
   subnets              = local.network.private_subnets
   instance_profile_arn = module.gitlab_rails_role.instance_profile_arn
   lb_target_group_arn  = module.gitlab_alb.target_group_arns["int_instance"]
-  user_data            = filebase64("${path.module}/templates/user_data_gitlab_rails.sh")
+  user_data            = filebase64("${path.module}/templates/user-data-gitlab-rails.sh")
 
   tags = {
     Environment = "production"
@@ -247,7 +247,7 @@ module "gitlab_runner" {
   ami_id               = data.aws_ami.gitlab_rails_ami.id
   subnets              = local.network.private_subnets
   instance_profile_arn = module.gitlab_runner_role.instance_profile_arn
-  user_data            = filebase64("${path.module}/templates/user_data_gitlab_runner.sh")
+  user_data            = filebase64("${path.module}/templates/user-data-gitlab-runner.sh")
 
   tags = {
     Environment = "production"
