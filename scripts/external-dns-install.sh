@@ -1,10 +1,10 @@
 #!/bin/bash
 
-helm repo add external-dns https://kubernetes-sigs.github.io/external-dns/
-helm repo update 
-
 kubectl create namespace external-dns
 kubectl apply -f $PWD/../manifest/external-dns/external-dns-serviceaccount.yaml
+
+helm repo add external-dns https://kubernetes-sigs.github.io/external-dns/
+helm repo update
 
 helm install external-dns external-dns/external-dns \
   -n external-dns \
