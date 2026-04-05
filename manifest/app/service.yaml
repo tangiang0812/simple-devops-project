@@ -6,8 +6,10 @@ metadata:
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-name: "ops-inspiration-console-lb"
     service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: "Project=ops-inspiration-console,Environment=production,Name=ops-inspiration-console-lb"
+    external-dns.alpha.kubernetes.io/hostname: oic.gnaig.click
 spec:
   type: LoadBalancer
+  loadBalancerClass: service.k8s.aws/nlb
   selector:
     app: ops-inspiration-console-app
   ports:
