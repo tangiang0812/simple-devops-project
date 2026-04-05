@@ -14,7 +14,7 @@ module "alias_dns_record" {
   domain_name          = "gnaig.click"
   subdomain_name       = "gitlab"
   vpc_id               = local.network.vpc_id
-  route53_zone_id      = data.route53_zone.route53_zone.id
+  route53_zone_id      = var.route53_zone_id
   alias_dns_name       = module.gitlab_nlb.lb_dns_name
   alias_hosted_zone_id = module.gitlab_nlb.lb_hosted_zone_id
 
@@ -179,18 +179,18 @@ module "gitlab_rails_role" {
   }
 }
 
-module "bastion_role" {
-  source = "../../modules/iam"
-  name   = "bastion"
+# module "bastion_role" {
+#   source = "../../modules/iam"
+#   name   = "bastion"
 
-  managed_policy_arns     = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
-  create_instance_profile = true
+#   managed_policy_arns     = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
+#   create_instance_profile = true
 
-  tags = {
-    Environment = "production"
-    Project     = "gitlab"
-  }
-}
+#   tags = {
+#     Environment = "production"
+#     Project     = "gitlab"
+#   }
+# }
 
 module "gitlab_runner_role" {
   source = "../../modules/iam"
@@ -209,20 +209,20 @@ module "gitlab_runner_role" {
   }
 }
 
-module "bastion" {
-  source               = "../../modules/compute"
-  name                 = "gitlab-bastion"
-  vpc_id               = local.network.vpc_id
-  ami_id               = data.aws_ami.amazon_linux.id
-  subnets              = local.network.private_subnets
-  instance_profile_arn = module.bastion_role.instance_profile_arn
-  # user_data            = filebase64("${path.module}/templates/user_data_bastion.sh")
+# module "bastion" {
+#   source               = "../../modules/compute"
+#   name                 = "gitlab-bastion"
+#   vpc_id               = local.network.vpc_id
+#   ami_id               = data.aws_ami.amazon_linux.id
+#   subnets              = local.network.private_subnets
+#   instance_profile_arn = module.bastion_role.instance_profile_arn
+#   # user_data            = filebase64("${path.module}/templates/user_data_bastion.sh")
 
-  tags = {
-    Environment = "production"
-    Project     = "gitlab"
-  }
-}
+#   tags = {
+#     Environment = "production"
+#     Project     = "gitlab"
+#   }
+# }
 
 module "gitlab_rails" {
   source               = "../../modules/compute"
@@ -334,14 +334,14 @@ resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_nlb_https_from_an
   to_port           = 443
 }
 
-resource "aws_vpc_security_group_egress_rule" "egress_gitlab_nlb_ssh_to_bastion_host" {
-  security_group_id            = module.gitlab_nlb.lb_security_group_id
-  referenced_security_group_id = module.bastion.security_group_id
-  # cidr_ipv4         = "0.0.0.0/0"
-  from_port   = 22
-  ip_protocol = "tcp"
-  to_port     = 22
-}
+# resource "aws_vpc_security_group_egress_rule" "egress_gitlab_nlb_ssh_to_bastion_host" {
+#   security_group_id            = module.gitlab_nlb.lb_security_group_id
+#   referenced_security_group_id = module.bastion.security_group_id
+#   # cidr_ipv4         = "0.0.0.0/0"
+#   from_port   = 22
+#   ip_protocol = "tcp"
+#   to_port     = 22
+# }
 
 resource "aws_vpc_security_group_egress_rule" "egress_gitlab_nlb_https_to_gitlab_alb" {
   security_group_id            = module.gitlab_nlb.lb_security_group_id
@@ -368,13 +368,13 @@ resource "aws_vpc_security_group_egress_rule" "egress_gitlab_alb_http_to_gitlab_
   to_port                      = 80
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_rails_ssh_from_gitlab_bastion_host" {
-  security_group_id            = module.gitlab_rails.security_group_id
-  referenced_security_group_id = module.bastion.security_group_id
-  from_port                    = 22
-  ip_protocol                  = "tcp"
-  to_port                      = 22
-}
+# resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_rails_ssh_from_gitlab_bastion_host" {
+#   security_group_id            = module.gitlab_rails.security_group_id
+#   referenced_security_group_id = module.bastion.security_group_id
+#   from_port                    = 22
+#   ip_protocol                  = "tcp"
+#   to_port                      = 22
+# }
 
 resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_rails_http_from_gitlab_alb" {
   security_group_id            = module.gitlab_rails.security_group_id
@@ -425,29 +425,29 @@ resource "aws_vpc_security_group_egress_rule" "egress_gitlab_runner_http_to_any"
   to_port           = 80
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ingress_bastion_host_ssh_from_gitlab_nlb" {
-  security_group_id            = module.bastion.security_group_id
-  referenced_security_group_id = module.gitlab_nlb.lb_security_group_id
-  from_port                    = 22
-  ip_protocol                  = "tcp"
-  to_port                      = 22
-}
+# resource "aws_vpc_security_group_ingress_rule" "ingress_bastion_host_ssh_from_gitlab_nlb" {
+#   security_group_id            = module.bastion.security_group_id
+#   referenced_security_group_id = module.gitlab_nlb.lb_security_group_id
+#   from_port                    = 22
+#   ip_protocol                  = "tcp"
+#   to_port                      = 22
+# }
 
-resource "aws_vpc_security_group_egress_rule" "egress_bastion_host_to_ssm" {
-  security_group_id = module.bastion.security_group_id
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 443
-  ip_protocol       = "tcp"
-  to_port           = 443
-}
+# resource "aws_vpc_security_group_egress_rule" "egress_bastion_host_to_ssm" {
+#   security_group_id = module.bastion.security_group_id
+#   cidr_ipv4         = "0.0.0.0/0"
+#   from_port         = 443
+#   ip_protocol       = "tcp"
+#   to_port           = 443
+# }
 
-resource "aws_vpc_security_group_egress_rule" "egress_bastion_host_ssh_to_gitlab_rails" {
-  security_group_id            = module.bastion.security_group_id
-  referenced_security_group_id = module.gitlab_rails.security_group_id
-  from_port                    = 22
-  ip_protocol                  = "tcp"
-  to_port                      = 22
-}
+# resource "aws_vpc_security_group_egress_rule" "egress_bastion_host_ssh_to_gitlab_rails" {
+#   security_group_id            = module.bastion.security_group_id
+#   referenced_security_group_id = module.gitlab_rails.security_group_id
+#   from_port                    = 22
+#   ip_protocol                  = "tcp"
+#   to_port                      = 22
+# }
 
 resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_rds_postgres_from_gitlab_rails" {
   security_group_id            = local.stateful.gitlab_db_security_group_id

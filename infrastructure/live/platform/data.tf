@@ -35,8 +35,10 @@ data "aws_ami" "amazon_linux" {
   owners = ["137112412989"] # Canonical
 }
 
-data "route53_zone" "route53_zone" {
-  zone_id = var.route53_zone_id
-  # private_zone = false
-  # name         = var.domain_name
-}
+# data "route53_zone" "route53_zone" {
+#   zone_id = var.route53_zone_id
+#   # private_zone = false
+#   # name         = var.domain_name
+# }
+
+data "aws_caller_identity" "current" {}
