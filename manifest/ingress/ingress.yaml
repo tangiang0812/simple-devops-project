@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: app-ingress
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: alb
+  labels:
+    app: application-nginx-ingress
+spec:
+  rules:
+    - host: "oic.gnaig.click"
+      http:
+        paths:
+          - path: /*
+            backend:
+              serviceName: "ops-inspiration-console-service"
+              servicePort: 80
