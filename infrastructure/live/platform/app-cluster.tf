@@ -79,3 +79,17 @@ resource "local_file" "aws_load_balancer_controller_serviceaccount_yaml" {
   })
   filename = "${path.module}/../../../manifest/aws-load-balancer-controller/aws-load-balancer-controller-serviceaccount.yaml"
 }
+
+resource "local_file" "app_ingress_yaml" {
+  content = templatefile("${path.module}/templates/ingress-app.yaml.tpl", {
+    CERTIFICATE_ARN = module.gitlab_cert.cert_arn
+  })
+  filename = "${path.module}/../../../manifest/app/ingress.yaml"
+}
+
+resource "local_file" "argocd_ingress_yaml" {
+  content = templatefile("${path.module}/templates/ingress-two-ingress-blocks.yaml.tpl", {
+    CERTIFICATE_ARN = module.gitlab_cert.cert_arn
+  })
+  filename = "${path.module}/../../../manifest/argocd/ingress.yaml"
+}

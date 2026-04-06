@@ -89,7 +89,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-    - host: grpc.argocd.gnaig.click
+    - host: grpc-argocd.gnaig.click
       http:
         paths:
           - path: /

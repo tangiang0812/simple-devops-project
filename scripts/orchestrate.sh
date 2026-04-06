@@ -33,6 +33,7 @@ wait $PID1 || {
 }
 echo "[6] Install ArgoCD"
 ./argocd-install.sh
+./argocd-ingress-setup.sh
 
 wait $PID2 || {
   echo "Group 2 failed"
@@ -41,11 +42,24 @@ wait $PID2 || {
 
 # sleep 400s for aws-load-balancer-controller fully set up
 while true; do
-  HOSTNAME=$(kubectl get svc argocd-server -n argocd \
-    -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+  # HOSTNAME=$(kubectl get svc argocd-server -n argocd \
+  #   -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 
   if [ -n "$HOSTNAME" ]; then
     echo "ALB is ready: $HOSTNAME"
+    break
+  fi
+
+  HOSTNAME1=$(kubectl get ingress argocd-ingress -n argocd \
+    -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+  HOSTNAME2=$(kubectl get ingress argocd-server-grpc-ingress -n argocd \
+    -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+  if [ -n "$HOSTNAME1" ] && [ -n "$HOSTNAME2" ]; then
+    echo "Both ALBs are ready:"
+    echo "HTTP:  $HOSTNAME1"
+    echo "gRPC:  $HOSTNAME2"
     break
   fi
 
@@ -54,6 +68,7 @@ while true; do
 done
 
 echo "[7] ArgoCD set up repository and application"
+sleep 7
 ./argocd-setup-app.sh
 
 wait $PID3 || {
