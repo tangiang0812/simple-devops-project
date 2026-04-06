@@ -5,7 +5,7 @@ variable "region" {
 
 variable "vpc_name" {
   type    = string
-  default = "gnaig-vpc"
+  default = "gnaig"
 }
 
 variable "vpc_cidr" {
