@@ -33,6 +33,23 @@ wait $PID1 || {
 }
 echo "[6] Install ArgoCD"
 ./argocd-install.sh
+
+while true; do
+  # HOSTNAME=$(kubectl get svc argocd-server -n argocd \
+  #   -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+  if [ -n "$ENDPOINT" ]; then
+    echo "ALB controller is ready: $ENDPOINT"
+    break
+  fi
+
+  ENDPOINT=$(kubectl get endpoints aws-load-balancer-webhook-service -n \
+    kube-system -o jsonpath='{.subsets[0].addresses[0].ip}')
+
+  echo "Waiting for ALB controller..."
+  sleep 5
+done
+
 ./argocd-ingress-setup.sh
 
 wait $PID2 || {
