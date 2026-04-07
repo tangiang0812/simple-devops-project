@@ -8,7 +8,7 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/group.name: shared-alb
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
-    alb.ingress.kubernetes.io/certificate-arn: ${CERTIFICATE_ARN}
+    # alb.ingress.kubernetes.io/certificate-arn: ${CERTIFICATE_ARN}
     alb.ingress.kubernetes.io/ssl-redirect: '443'
     alb.ingress.kubernetes.io/backend-protocol: HTTPS
     # alb.ingress.kubernetes.io/backend-protocol-version: HTTP2 # This does not work with ArgoCD server for some reason, need to investigate further.
@@ -41,7 +41,7 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/group.name: shared-alb
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
-    alb.ingress.kubernetes.io/certificate-arn: ${CERTIFICATE_ARN}
+    # alb.ingress.kubernetes.io/certificate-arn: ${CERTIFICATE_ARN}
     alb.ingress.kubernetes.io/conditions.argocd-server: |
       [{"field":"http-header","httpHeaderConfig":{"httpHeaderName": "Content-Type", "values":["application/grpc"]}}]  
     # Use GRPC backend protocol for native gRPC
