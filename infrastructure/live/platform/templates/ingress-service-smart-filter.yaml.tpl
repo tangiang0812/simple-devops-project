@@ -48,9 +48,9 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/backend-protocol-version: GRPC #This tells AWS to send traffic from the ALB using GRPC. Can use GRPC as well if you want to leverage GRPC specific features
     # pair these 2 if you want to use /grpc.health.v1.Health/Check instead of 
-    # /AWS.ALB/healthcheck with success code 12
-    alb.ingress.kubernetes.io/healthcheck-path: /grpc.health.v1.Health/Check
-    alb.ingress.kubernetes.io/success-codes: '0'  
+    # /AWS.ALB/healthcheck with success code 12 this does not work atm =D
+    # alb.ingress.kubernetes.io/healthcheck-path: /grpc.health.v1.Health/Check
+    # alb.ingress.kubernetes.io/success-codes: '0'
   labels:
     app: argogrpc-service
   name: argogrpc
