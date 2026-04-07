@@ -30,6 +30,6 @@ build {
   sources = ["source.amazon-ebs.gitlab_rails"]
 
   provisioner "shell" {
-    script = "install.sh"
+    script = "gitlab-rails-setup.sh"
   }
 }

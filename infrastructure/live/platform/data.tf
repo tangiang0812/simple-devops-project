@@ -23,6 +23,17 @@ data "aws_ami" "gitlab_rails_ami" {
   owners = ["self"]
 }
 
+data "aws_ami" "gitlab_runner_ami" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["gitlab-runner-custom-*"]
+  }
+
+  owners = ["self"]
+}
+
 data "aws_ami" "amazon_linux" {
   most_recent = true
 

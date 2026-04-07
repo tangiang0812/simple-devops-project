@@ -273,7 +273,7 @@ module "gitlab_runner" {
   source               = "../../modules/compute"
   name                 = "gitlab-runner"
   vpc_id               = local.network.vpc_id
-  ami_id               = data.aws_ami.gitlab_rails_ami.id
+  ami_id               = data.aws_ami.gitlab_runner_ami.id
   subnets              = local.network.private_subnets
   instance_profile_arn = module.gitlab_runner_role.instance_profile_arn
   user_data            = filebase64("${path.module}/templates/user-data-gitlab-runner.sh")

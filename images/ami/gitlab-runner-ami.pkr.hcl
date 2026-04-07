@@ -7,7 +7,7 @@ packer {
   }
 }
 
-source "amazon-ebs" "gitlab_rails" {
+source "amazon-ebs" "gitlab_runner" {
   region        = "us-east-1"
   instance_type = "t3.micro"
   ssh_username  = "ubuntu"
@@ -23,13 +23,13 @@ source "amazon-ebs" "gitlab_rails" {
     most_recent = true
   }
 
-  ami_name = "gitlab-rails-custom-{{timestamp}}"
+  ami_name = "gitlab-runner-custom-{{timestamp}}"
 }
 
 build {
-  sources = ["source.amazon-ebs.gitlab_rails"]
+  sources = ["source.amazon-ebs.gitlab_runner"]
 
   provisioner "shell" {
-    script = "install.sh"
+    script = "gitlab-runner-setup.sh"
   }
 }
