@@ -16,7 +16,9 @@ kubectl apply --server-side --force-conflicts -n argocd -f https://raw.githubuse
 
 # We will use Ingress to set up ALB for ArgoCD server, which is required for external-dns to manage DNS records for ArgoCD server.
 kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "ClusterIP"}}'
-kubectl patch cm argocd-cmd-params-cm -n argocd --type merge -p '{"data": {"server.insecure": "false"}}'
+
+# data.server.insecure: "true" --- IGNORE --- only used when using port 80
+# kubectl patch cm argocd-cmd-params-cm -n argocd --type merge -p '{"data": {"server.insecure": "false"}}'
 # kubectl rollout restart deployment argocd-server -n argocd
 # kubectl annotate svc argocd-server -n argocd \
 #   alb.ingress.kubernetes.io/healthcheck-protocol=HTTP \
