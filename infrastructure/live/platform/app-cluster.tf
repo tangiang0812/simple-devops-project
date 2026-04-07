@@ -80,16 +80,18 @@ resource "local_file" "aws_load_balancer_controller_serviceaccount_yaml" {
   filename = "${path.module}/../../../manifest/aws-load-balancer-controller/aws-load-balancer-controller-serviceaccount.yaml"
 }
 
-resource "local_file" "app_ingress_yaml" {
-  content = templatefile("${path.module}/templates/ingress-app.yaml.tpl", {
-    CERTIFICATE_ARN = module.gitlab_cert.cert_arn
-  })
-  filename = "${path.module}/../../../manifest/app/ingress.yaml"
-}
+# No need to use this as we can just let AWS Load Balancer Controller discover the correct certificate to use based on the Ingress annotations. 
+#This is because we are using a single certificate for all our Ingress resources, so there will be no ambiguity for AWS Load Balancer Controller to resolve.
+# resource "local_file" "app_ingress_yaml" {
+#   content = templatefile("${path.module}/templates/ingress-app.yaml.tpl", {
+#     CERTIFICATE_ARN = module.gitlab_cert.cert_arn
+#   })
+#   filename = "${path.module}/../../../manifest/app/ingress.yaml"
+# }
 
-resource "local_file" "argocd_ingress_yaml" {
-  content = templatefile("${path.module}/templates/ingress-two-ingress-blocks.yaml.tpl", {
-    CERTIFICATE_ARN = module.gitlab_cert.cert_arn
-  })
-  filename = "${path.module}/../../../manifest/argocd/ingress.yaml"
-}
+# resource "local_file" "argocd_ingress_yaml" {
+#   content = templatefile("${path.module}/templates/ingress-two-ingress-blocks.yaml.tpl", {
+#     CERTIFICATE_ARN = module.gitlab_cert.cert_arn
+#   })
+#   filename = "${path.module}/../../../manifest/argocd/ingress.yaml"
+# }
