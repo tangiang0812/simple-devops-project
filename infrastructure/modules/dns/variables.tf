@@ -8,10 +8,10 @@ variable "domain_name" {
   type        = string
 }
 
-variable "subdomain_name" {
-  description = "The sub domain name for the ACM certificate."
-  type        = string
-}
+# variable "subdomain_name" {
+#   description = "The sub domain name for the ACM certificate."
+#   type        = string
+# }
 
 variable "route53_zone_id" {
   description = "The ID of the existing Route 53 hosted zone to use."

@@ -38,15 +38,17 @@ module "eks_al2023" {
 }
 
 resource "aws_iam_policy" "aws_load_balancer_controller_policy" {
-  name        = "Allow_AWS_Load_Balancer_Controller_permissions"
+  name        = "aws-load-balancer-controller-policy"
   path        = "/"
   description = "Allow permissions for AWS Load Balancer Controller"
 
   policy = file("${path.module}/templates/aws-load-balancer-controller-iam-policy.json")
 }
 
-resource "aws_iam_role" "aws_load_balancer_controller" {
-  name = "aws-load-balancer-controller-role"
+module "aws_load_balancer_controller" {
+  source                  = "../../modules/iam"
+  name                    = "aws-load-balancer-controller"
+  create_instance_profile = false
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -66,16 +68,20 @@ resource "aws_iam_role" "aws_load_balancer_controller" {
       }
     ]
   })
-}
 
-resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
-  role       = aws_iam_role.aws_load_balancer_controller.name
-  policy_arn = aws_iam_policy.aws_load_balancer_controller_policy.arn
+  managed_policy_arns = [
+    aws_iam_policy.aws_load_balancer_controller_policy.arn,
+  ]
+
+  tags = {
+    Environment = "production"
+    Project     = "aws-load-balancer-controller"
+  }
 }
 
 resource "local_file" "aws_load_balancer_controller_serviceaccount_yaml" {
   content = templatefile("${path.module}/templates/aws-load-balancer-controller-serviceaccount.yaml.tpl", {
-    ROLE_ARN = aws_iam_role.aws_load_balancer_controller.arn
+    ROLE_ARN = module.aws_load_balancer_controller.role_arn
   })
   filename = "${path.module}/../../../manifest/aws-load-balancer-controller/aws-load-balancer-controller-serviceaccount.yaml"
 }

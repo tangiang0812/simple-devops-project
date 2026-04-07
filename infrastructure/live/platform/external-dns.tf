@@ -1,7 +1,7 @@
-resource "aws_iam_policy" "allow_externalDNS_updates" {
-  name        = "Allow_External_DNS_updates"
+resource "aws_iam_policy" "allow_external_dns_updates_policy" {
+  name        = "allow-external-dns-updates-policy"
   path        = "/"
-  description = "Allow S3 object and bucket operations for gitlab-* buckets"
+  description = "Allow External-DNS to updates Route53 records"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -26,8 +26,10 @@ resource "aws_iam_policy" "allow_externalDNS_updates" {
   })
 }
 
-resource "aws_iam_role" "external_dns" {
-  name = "external-dns-irsa-role"
+module "external_dns" {
+  source                  = "../../modules/iam"
+  name                    = "external-dns"
+  create_instance_profile = false
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -47,16 +49,20 @@ resource "aws_iam_role" "external_dns" {
       }
     ]
   })
-}
 
-resource "aws_iam_role_policy_attachment" "external_dns" {
-  role       = aws_iam_role.external_dns.name
-  policy_arn = resource.aws_iam_policy.allow_externalDNS_updates.arn
+  managed_policy_arns = [
+    aws_iam_policy.allow_external_dns_updates_policy.arn,
+  ]
+
+  tags = {
+    Environment = "production"
+    Project     = "external-dns"
+  }
 }
 
 resource "local_file" "external_dns_serviceaccount_yaml" {
   content = templatefile("${path.module}/templates/external-dns-serviceaccount.yaml.tpl", {
-    ROLE_ARN = aws_iam_role.external_dns.arn
+    ROLE_ARN = module.external_dns.role_arn
   })
   filename = "${path.module}/../../../manifest/external-dns/external-dns-serviceaccount.yaml"
 }

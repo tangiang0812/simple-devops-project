@@ -1,6 +1,6 @@
 module "gitlab_cert" {
   source          = "../../modules/certificates"
-  domain_name     = "gnaig.click"
+  domain_name     = var.domain_name
   route53_zone_id = module.alias_dns_record.zone_id
 
   tags = {
@@ -11,8 +11,7 @@ module "gitlab_cert" {
 
 module "alias_dns_record" {
   source               = "../../modules/dns"
-  domain_name          = "gnaig.click"
-  subdomain_name       = "gitlab"
+  domain_name          = "gitlab.${var.domain_name}"
   vpc_id               = local.network.vpc_id
   route53_zone_id      = data.aws_route53_zone.route53_zone.zone_id
   alias_dns_name       = module.gitlab_nlb.lb_dns_name
@@ -164,14 +163,30 @@ resource "aws_iam_policy" "gitlab_rails_s3_access_policy" {
 }
 
 module "gitlab_rails_role" {
-  source = "../../modules/iam"
-  name   = "gitlab-rails"
+  source                  = "../../modules/iam"
+  name                    = "gitlab-rails"
+  create_instance_profile = true
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      },
+    ]
+  })
+
   managed_policy_arns = [
     aws_iam_policy.gitlab_rails_s3_access_policy.arn,
     "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
   ]
-  create_instance_profile = true
+
 
   tags = {
     Environment = "production"
@@ -193,15 +208,29 @@ module "gitlab_rails_role" {
 # }
 
 module "gitlab_runner_role" {
-  source = "../../modules/iam"
-  name   = "gitlab-runner"
+  source                  = "../../modules/iam"
+  name                    = "gitlab-runner"
+  create_instance_profile = true
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      },
+    ]
+  })
 
   managed_policy_arns = [
     aws_iam_policy.gitlab_rails_s3_access_policy.arn,
     "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
   ]
-  create_instance_profile = true
 
   tags = {
     Environment = "production"

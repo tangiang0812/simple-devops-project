@@ -3,10 +3,10 @@ variable "name" {
   type        = string
 }
 
-# variable "assume_role_policy" {
-#   description = "The trust relationship policy that grants an entity permission to assume the role."
-#   type        = string
-# }
+variable "assume_role_policy" {
+  description = "The trust relationship policy that grants an entity permission to assume the role."
+  type        = string
+}
 
 variable "managed_policy_arns" {
   description = "A list of ARNs of managed policies to attach to the role."
