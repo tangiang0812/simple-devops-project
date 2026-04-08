@@ -1,24 +1,38 @@
-resource "aws_eks_cluster" "main" {
-  name     = var.cluster_name
-  role_arn = var.cluster_role_arn
-  version  = var.cluster_version
+module "this" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 21.0"
 
-  vpc_config {
-    subnet_ids = var.subnet_ids
-  }
-}
+  name                                     = var.cluster_name
+  kubernetes_version                       = "1.33"
+  endpoint_public_access                   = true
+  enable_cluster_creator_admin_permissions = true
 
-resource "aws_eks_node_group" "main" {
-  cluster_name    = aws_eks_cluster.main.name
-  node_group_name = "${var.cluster_name}-ng"
-  node_role_arn   = var.node_role_arn
-  subnet_ids      = var.subnet_ids
-
-  scaling_config {
-    desired_size = var.desired_size
-    min_size     = var.min_size
-    max_size     = var.max_size
+  addons = {
+    coredns = {}
+    eks-pod-identity-agent = {
+      before_compute = true
+    }
+    kube-proxy = {}
+    vpc-cni = {
+      before_compute = true
+    }
   }
 
-  instance_types = var.instance_types
+  vpc_id     = var.vpc_id
+  subnet_ids = var.subnet_ids
+
+  eks_managed_node_groups = {
+    default = {
+      instance_types = var.instance_types
+      ami_type       = "AL2023_x86_64_STANDARD"
+
+      min_size     = var.min_size
+      max_size     = var.max_size
+      desired_size = var.desired_size
+    }
+  }
+
+  tags = merge({
+    Name = "${var.cluster_name}-cluster"
+  }, var.tags)
 }
