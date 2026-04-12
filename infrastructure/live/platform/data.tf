@@ -34,6 +34,25 @@ data "aws_ami" "gitlab_runner_ami" {
   owners = ["self"]
 }
 
+data "aws_ami" "gitlab_gitaly_ami" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["gitlab-gitaly-custom-*"]
+  }
+
+  owners = ["self"]
+}
+
+# data "aws_instance" "gitaly" {
+#   filter {
+#     name   = "tag:Name"
+#     values = ["gitlab-gitaly-instance"]
+#   }
+#   depends_on = [module.gitlab_gitaly]
+# }
+
 data "aws_ami" "amazon_linux" {
   most_recent = true
 
@@ -53,3 +72,5 @@ data "aws_route53_zone" "route53_zone" {
 }
 
 data "aws_caller_identity" "current" {}
+
+

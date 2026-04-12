@@ -24,3 +24,9 @@ sudo apt-get install gitlab-ce=17.11.7-ce.0 -y
 # curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" -o script.deb.sh
 # sudo bash script.deb.sh
 # sudo apt-get install gitlab-runner docker.io ca-certificates curl gnupg -y
+
+sudo apt-get install -y unzip
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip
+unzip awscliv2.zip
+sudo ./aws/install

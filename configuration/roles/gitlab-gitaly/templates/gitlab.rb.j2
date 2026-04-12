@@ -1,17 +1,3 @@
-#!/bin/bash -xe
-DOMAIN_NAME=$(aws ssm get-parameters --region us-east-1 --names /gitlab/domain_name --query Parameters[0].Value)
-DOMAIN_NAME=$(echo $DOMAIN_NAME | sed -e 's/^"//' -e 's/"$//')
-
-
-GITALY_TOKEN=$(aws ssm get-parameters --region us-east-1 --names /gitlab/gitaly/gitaly_token --with-decryption --query Parameters[0].Value)
-GITALY_TOKEN=$(echo $GITALY_TOKENL | sed -e 's/^"//' -e 's/"$//')
-
-
-FILE="/etc/gitlab/gitlab.rb"
-
-cp "$FILE" "$FILE.bak"
-
-cat > $FILE <<EOF
 # Avoid running unnecessary services on the Gitaly server
 postgresql['enable'] = false
 redis['enable'] = false
@@ -42,7 +28,7 @@ gitlab_rails['auto_migrate'] = false
 # fail. This can be your 'front door' GitLab URL or an internal load
 # balancer.
 # Don't forget to copy `/etc/gitlab/gitlab-secrets.json` from Gitaly client to Gitaly server.
-gitlab_rails['internal_api_url'] = "$DOMAIN_NAME"
+gitlab_rails['internal_api_url'] = "https://gitlab.{{ domain_name }}"
 
 gitaly['configuration'] = {
    # ...
@@ -56,21 +42,12 @@ gitaly['configuration'] = {
      #
      # Authentication token to ensure only authorized servers can communicate with
      # Gitaly server
-     token: '$GITALY_TOKEN',
+     token: "{{ gitaly_token }}",
    },
    storage: [
       {
          name: 'default',
          path: '/var/opt/gitlab/git-data/repositories',
       },
-    #   {
-    #      name: 'alternative',
-    #      path: '/mnt/gitlab/git-data/repositories',
-    #   },
    ],
 }
-EOF
-
-gitlab-ctl reconfigure
-gitlab-rake gitlab:check
-gitlab-ctl status

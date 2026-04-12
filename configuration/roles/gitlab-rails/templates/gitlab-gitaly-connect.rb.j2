@@ -1,0 +1,7 @@
+gitlab_rails['repositories_storages'] = {
+{% for host in groups['role_gitlab_gitaly_instance'] %}
+    '{{ "default" if loop.first else "storage" ~ loop.index }}' => {
+        'gitaly_address' => 'tcp://{{ hostvars[host].network_interfaces[0].private_dns_name }}:8075'
+    }
+{% endfor %}
+}

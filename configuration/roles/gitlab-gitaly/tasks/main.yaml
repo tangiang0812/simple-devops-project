@@ -1,0 +1,25 @@
+- name: Copy Gitlab secrets from localhost to Gitlab gitaly.
+  ansible.builtin.copy:
+    src: tmp/gitlab-secrets.json
+    dest: /etc/gitlab/gitlab-secrets.json
+    mode: '0600'
+  become: true
+
+- name: Fetch Gitaly token
+  ansible.builtin.set_fact:
+    gitaly_token: "{{ lookup('amazon.aws.aws_ssm', '/gitlab/gitaly/gitaly_token', region=aws_region, decrypt=True) }}"
+
+- name: Fetch domain name
+  ansible.builtin.set_fact:
+    domain_name: "{{ lookup('amazon.aws.aws_ssm', '/gitlab/domain_name', region=aws_region) }}"
+  delegate_to: localhost
+
+- name: Configure gitlab.rb
+  ansible.builtin.template:
+    src: gitlab.rb.j2
+    dest: /etc/gitlab/gitlab.rb
+    owner: root
+    group: root
+    mode: "0600"
+  become: true
+  notify: Reconfigure GitLab

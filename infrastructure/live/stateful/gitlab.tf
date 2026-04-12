@@ -65,3 +65,17 @@ module "gitlab_s3_health_logs" {
     Project     = "gitlab"
   }
 }
+
+module "gitlab-ansible-ssm-bucket" {
+  source = "../../modules/storage/s3"
+
+  name                           = "ansible-ssm-bucket"
+  force_destroy                  = true
+  attach_elb_log_delivery_policy = true
+  suffix                         = "gnaig"
+
+  tags = {
+    Environment = "production"
+    Project     = "gitlab"
+  }
+}

@@ -35,6 +35,9 @@ DB_PASSWORD=$(echo $DB_PASSWORD | sed -e 's/^"//' -e 's/"$//')
 RAILS_PASSWORD=$(aws ssm get-parameters --region us-east-1 --names /gitlab/rails/rails_password --with-decryption --query Parameters[0].Value)
 RAILS_PASSWORD=$(echo $RAILS_PASSWORD | sed -e 's/^"//' -e 's/"$//')
 
+GITALY_TOKEN=$(aws ssm get-parameters --region us-east-1 --names /gitlab/gitaly/gitaly_token --with-decryption --query Parameters[0].Value)
+GITALY_TOKEN=$(echo $GITALY_TOKEN | sed -e 's/^"//' -e 's/"$//')
+
 
 FILE="/etc/gitlab/gitlab.rb"
 
@@ -90,6 +93,17 @@ gitlab_rails['object_store']['objects']['ci_secure_files']['bucket'] = 'gitlab-c
 gitlab_rails['object_store']['objects']['pages']['bucket'] = 'gitlab-pages-gnaig'
 
 gitlab_rails['auto_migrate'] = true
+
+gitlab_rails['gitaly_token'] = "$GITALY_TOKEN"
+
+gitaly['enable'] = false
+
+# gitlab_rails['repositories_storages'] = {
+#   'default' => {
+#     'gitaly_address' => 'tcp://praefect-lb:2305',
+#     'gitaly_token' => 'secret_token'
+#   }
+# }
 EOF
 
 export PGPASSWORD="$DB_PASSWORD"

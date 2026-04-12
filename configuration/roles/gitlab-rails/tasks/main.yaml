@@ -1,0 +1,108 @@
+- name: Fetch DB password
+  ansible.builtin.set_fact:
+    db_password: "{{ lookup('amazon.aws.aws_ssm', '/gitlab/postgresql/db_password', region=aws_region, decrypt=True) }}"
+
+- name: Fetch DB user
+  ansible.builtin.set_fact:
+    db_user: "{{ lookup('amazon.aws.aws_ssm', '/gitlab/postgresql/db_user', region=aws_region) }}"
+
+- name: Fetch DB name
+  ansible.builtin.set_fact:
+    db_name: "{{ lookup('amazon.aws.aws_ssm', '/gitlab/postgresql/db_name', region=aws_region) }}"
+
+- name: Fetch DB endpoint
+  ansible.builtin.set_fact:
+    db_endpoint: "{{ lookup('amazon.aws.aws_ssm', '/gitlab/postgresql/db_endpoint', region=aws_region) }}"
+
+- name: Fetch Redis endpoint
+  ansible.builtin.set_fact:
+    redis_endpoint: "{{ lookup('amazon.aws.aws_ssm', '/gitlab/redis/cache_endpoint', region=aws_region) }}"
+
+- name: Fetch domain
+  ansible.builtin.set_fact:
+    domain: "{{ lookup('amazon.aws.aws_ssm', '/gitlab/domain_name', region=aws_region) }}"
+
+- name: Fetch Rails password
+  ansible.builtin.set_fact:
+    rails_password: "{{ lookup('amazon.aws.aws_ssm', '/gitlab/rails/rails_password', region=aws_region, decrypt=True) }}"
+
+- name: Backup gitlab.rb
+  ansible.builtin.copy:
+    src: /etc/gitlab/gitlab.rb
+    dest: /etc/gitlab/gitlab.rb.bak
+    mode: "0600"
+    remote_src: true
+  become: true
+  when: not ansible_check_mode
+
+- name: Configure gitlab.rb
+  ansible.builtin.template:
+    src: gitlab.rb.j2
+    dest: /etc/gitlab/gitlab.rb
+    owner: root
+    group: root
+    mode: "0600"
+  become: true
+  notify: Reconfigure GitLab
+
+- name: Build repositories storages config
+  ansible.builtin.set_fact:
+    rendered_content: "{{ lookup('template', 'gitlab-gitaly-connect.rb.j2') }}"
+
+- name: Configure repositories storages in gitlab.rb
+  ansible.builtin.blockinfile:
+    path: /etc/gitlab/gitlab.rb
+    append_newline: true
+    prepend_newline: true
+    block: "{{ rendered_content }}"
+  become: true
+
+# - name: Run handlers immediately
+#   ansible.builtin.meta: flush_handlers
+
+- name: Fetch Gitlab secrets to local host
+  ansible.builtin.fetch:
+    src: /etc/gitlab/gitlab-secrets.json
+    dest: "./tmp/"
+    flat: true
+  become: true
+
+- name: Ensure required PostgreSQL extensions
+  ansible.builtin.command:
+    argv:
+      - /opt/gitlab/embedded/bin/psql
+      - -h
+      - "{{ db_endpoint }}"
+      - -U
+      - "{{ db_user }}"
+      - -d
+      - "{{ db_name }}"
+      - -c
+      - "CREATE EXTENSION IF NOT EXISTS {{ item }};"
+  environment:
+    PGPASSWORD: "{{ db_password }}"
+  loop:
+    - btree_gist
+    - pg_trgm
+  register: result
+  changed_when: result.stderr == ""
+
+# - name: Build repositories storages config
+#   ansible.builtin.set_fact:
+#     gitlab_repos_storages: >-
+#       {{
+#         gitlab_repos_storages | default({}) |
+#         combine({
+#           (item == groups['role_gitlab_gitaly_instance'][0]) | ternary('default', 'storage' ~ idx):
+#           {
+#             'gitaly_address': 'tcp://' ~ hostvars[item].network_interfaces[0].private_dns_name ~ ':8075'
+#           }
+#         })
+#       }}
+#   loop: "{{ groups['role_gitlab_gitaly_instance'] }}"
+#   loop_control:
+#     index_var: idx
+
+# - name: Print rendering result
+#   ansible.builtin.debug:
+#     msg: "{{ gitlab_repos_storages }}"

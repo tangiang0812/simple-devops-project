@@ -194,18 +194,22 @@ module "gitlab_rails_role" {
   }
 }
 
-# module "bastion_role" {
-#   source = "../../modules/iam"
-#   name   = "bastion"
+module "gitlab_rails" {
+  source               = "../../modules/compute"
+  name                 = "gitlab-rails"
+  vpc_id               = local.network.vpc_id
+  ami_id               = data.aws_ami.gitlab_rails_ami.id
+  subnets              = local.network.private_subnets
+  instance_profile_arn = module.gitlab_rails_role.instance_profile_arn
+  lb_target_group_arn  = module.gitlab_alb.target_group_arns["int_instance"]
+  # configuring with ansible is more reliable than user_data
+  # user_data            = filebase64("${path.module}/templates/user-data-gitlab-rails.sh")
 
-#   managed_policy_arns     = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
-#   create_instance_profile = true
-
-#   tags = {
-#     Environment = "production"
-#     Project     = "gitlab"
-#   }
-# }
+  tags = {
+    Environment = "production"
+    Project     = "gitlab"
+  }
+}
 
 module "gitlab_runner_role" {
   source                  = "../../modules/iam"
@@ -238,6 +242,84 @@ module "gitlab_runner_role" {
   }
 }
 
+module "gitlab_runner" {
+  source               = "../../modules/compute"
+  name                 = "gitlab-runner"
+  vpc_id               = local.network.vpc_id
+  ami_id               = data.aws_ami.gitlab_runner_ami.id
+  subnets              = local.network.private_subnets
+  instance_profile_arn = module.gitlab_runner_role.instance_profile_arn
+  # configuring with ansible is more reliable than user_data
+  user_data = filebase64("${path.module}/templates/user-data-gitlab-runner.sh")
+
+  tags = {
+    Environment = "production"
+    Project     = "gitlab"
+  }
+}
+module "gitlab_gitaly_role" {
+  source                  = "../../modules/iam"
+  name                    = "gitlab-gitaly"
+  create_instance_profile = true
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      },
+    ]
+  })
+
+  managed_policy_arns = [
+    aws_iam_policy.gitlab_rails_s3_access_policy.arn,
+    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
+  ]
+
+  tags = {
+    Environment = "production"
+    Project     = "gitlab"
+  }
+}
+
+module "gitlab_gitaly" {
+  source               = "../../modules/compute"
+  name                 = "gitlab-gitaly"
+  vpc_id               = local.network.vpc_id
+  ami_id               = data.aws_ami.gitlab_gitaly_ami.id
+  subnets              = local.network.private_subnets
+  instance_profile_arn = module.gitlab_gitaly_role.instance_profile_arn
+  # configuring with ansible is more reliable than user_data
+  # user_data = filebase64("${path.module}/templates/user-data-gitlab-gitaly.sh")
+
+  tags = {
+    Environment = "production"
+    Project     = "gitlab"
+  }
+}
+
+
+
+
+# module "bastion_role" {
+#   source = "../../modules/iam"
+#   name   = "bastion"
+
+#   managed_policy_arns     = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
+#   create_instance_profile = true
+
+#   tags = {
+#     Environment = "production"
+#     Project     = "gitlab"
+#   }
+# }
+
 # module "bastion" {
 #   source               = "../../modules/compute"
 #   name                 = "gitlab-bastion"
@@ -253,36 +335,6 @@ module "gitlab_runner_role" {
 #   }
 # }
 
-module "gitlab_rails" {
-  source               = "../../modules/compute"
-  name                 = "gitlab-rails"
-  vpc_id               = local.network.vpc_id
-  ami_id               = data.aws_ami.gitlab_rails_ami.id
-  subnets              = local.network.private_subnets
-  instance_profile_arn = module.gitlab_rails_role.instance_profile_arn
-  lb_target_group_arn  = module.gitlab_alb.target_group_arns["int_instance"]
-  user_data            = filebase64("${path.module}/templates/user-data-gitlab-rails.sh")
-
-  tags = {
-    Environment = "production"
-    Project     = "gitlab"
-  }
-}
-
-module "gitlab_runner" {
-  source               = "../../modules/compute"
-  name                 = "gitlab-runner"
-  vpc_id               = local.network.vpc_id
-  ami_id               = data.aws_ami.gitlab_runner_ami.id
-  subnets              = local.network.private_subnets
-  instance_profile_arn = module.gitlab_runner_role.instance_profile_arn
-  user_data            = filebase64("${path.module}/templates/user-data-gitlab-runner.sh")
-
-  tags = {
-    Environment = "production"
-    Project     = "gitlab"
-  }
-}
 
 module "ssm_parameters" {
   source = "../../modules/configstore"
@@ -343,6 +395,22 @@ module "ssm_parameters" {
       value     = var.gitlab_root_password
       tier      = "Standard"
       overwrite = true
+    },
+    {
+      name      = "/gitlab/gitaly/internal_api_url"
+      type      = "String"
+      data_type = "text"
+      value     = module.gitlab_alb.lb_dns_name
+      tier      = "Standard"
+      overwrite = true
+    },
+    {
+      name      = "/gitlab/gitaly/gitaly_token"
+      type      = "SecureString"
+      data_type = "text"
+      value     = var.gitlab_gitaly_token
+      tier      = "Standard"
+      overwrite = true
     }
   ]
 }
@@ -389,6 +457,14 @@ resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_alb_https_from_gi
   to_port                      = 443
 }
 
+resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_alb_https_from_gitlab_gitaly" {
+  security_group_id            = module.gitlab_alb.lb_security_group_id
+  referenced_security_group_id = module.gitlab_gitaly.security_group_id
+  from_port                    = 443
+  ip_protocol                  = "tcp"
+  to_port                      = 443
+}
+
 resource "aws_vpc_security_group_egress_rule" "egress_gitlab_alb_http_to_gitlab_rails" {
   security_group_id            = module.gitlab_alb.lb_security_group_id
   referenced_security_group_id = module.gitlab_rails.security_group_id
@@ -429,6 +505,14 @@ resource "aws_vpc_security_group_egress_rule" "egress_gitlab_rails_to_gitlab_red
   to_port                      = 6379
 }
 
+resource "aws_vpc_security_group_egress_rule" "egress_gitlab_rails_to_gitlab_gitaly" {
+  security_group_id            = module.gitlab_rails.security_group_id
+  referenced_security_group_id = module.gitlab_gitaly.security_group_id
+  from_port                    = 8075
+  ip_protocol                  = "tcp"
+  to_port                      = 8075
+}
+
 resource "aws_vpc_security_group_egress_rule" "egress_gitlab_rails_https_to_any" {
   security_group_id = module.gitlab_rails.security_group_id
   cidr_ipv4         = "0.0.0.0/0"
@@ -452,6 +536,31 @@ resource "aws_vpc_security_group_egress_rule" "egress_gitlab_runner_http_to_any"
   from_port         = 80
   ip_protocol       = "tcp"
   to_port           = 80
+}
+
+resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_gitaly_gitaly_from_gitlab_rails" {
+  security_group_id            = module.gitlab_gitaly.security_group_id
+  referenced_security_group_id = module.gitlab_rails.security_group_id
+  from_port                    = 8075
+  ip_protocol                  = "tcp"
+  to_port                      = 8075
+}
+
+resource "aws_vpc_security_group_egress_rule" "egress_gitlab_gitaly_https_to_gitlab_alb" {
+  security_group_id            = module.gitlab_gitaly.security_group_id
+  referenced_security_group_id = module.gitlab_alb.lb_security_group_id
+  from_port                    = 443
+  ip_protocol                  = "tcp"
+  to_port                      = 443
+}
+
+
+resource "aws_vpc_security_group_egress_rule" "egress_gitlab_gitaly_https_to_any" {
+  security_group_id = module.gitlab_gitaly.security_group_id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  ip_protocol       = "tcp"
+  to_port           = 443
 }
 
 # resource "aws_vpc_security_group_ingress_rule" "ingress_bastion_host_ssh_from_gitlab_nlb" {

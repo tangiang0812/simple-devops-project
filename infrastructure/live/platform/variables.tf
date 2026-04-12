@@ -34,3 +34,9 @@ variable "gitlab_root_password" {
   type        = string
   sensitive   = true
 }
+
+variable "gitlab_gitaly_token" {
+  description = "Gitaly token for gRPC call from Gitlab rails nodes to Gitaly."
+  type        = string
+  sensitive   = true
+}

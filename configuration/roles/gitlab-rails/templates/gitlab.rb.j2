@@ -1,0 +1,54 @@
+external_url 'https://gitlab.{{ domain }}'
+
+letsencrypt['enable'] = false
+
+postgresql['enable'] = false
+gitlab_rails['db_adapter'] = "postgresql"
+gitlab_rails['db_encoding'] = "unicode"
+gitlab_rails['db_database'] = "{{ db_name }}"
+gitlab_rails['db_username'] = "{{ db_user }}"
+gitlab_rails['db_password'] = "{{ db_password }}"
+gitlab_rails['db_host'] = "{{ db_endpoint }}"
+
+redis['enable'] = false
+gitlab_rails['redis_host'] = "{{ redis_endpoint }}"
+gitlab_rails['redis_port'] = 6379
+gitlab_rails['redis_ssl'] = true
+
+nginx['listen_port'] = 80
+nginx['listen_https'] = false
+
+gitlab_sshd['enable'] = true
+gitlab_sshd['listen_address'] = '[::]:2222'
+gitlab_sshd['generate_host_keys'] = false
+
+gitlab_rails['monitoring_whitelist'] = ['0.0.0.0/0']
+gitlab_rails['initial_root_password'] = "{{ rails_password }}"
+
+gitlab_rails['object_store']['enabled'] = true
+gitlab_rails['object_store']['proxy_download'] = false
+gitlab_rails['object_store']['connection'] = {
+  'provider' => 'AWS',
+  'region' => 'us-east-1',
+  'use_iam_profile' => true
+}
+
+gitlab_rails['object_store']['storage_options'] = {
+  'server_side_encryption' => 'AES256',
+}
+
+gitlab_rails['object_store']['objects']['artifacts']['bucket'] = 'gitlab-artifacts-gnaig'
+gitlab_rails['object_store']['objects']['external_diffs']['bucket'] = 'gitlab-mr-diffs-gnaig'
+gitlab_rails['object_store']['objects']['lfs']['bucket'] = 'gitlab-lfs-gnaig'
+gitlab_rails['object_store']['objects']['uploads']['bucket'] = 'gitlab-uploads-gnaig'
+gitlab_rails['object_store']['objects']['packages']['bucket'] = 'gitlab-packages-gnaig'
+gitlab_rails['object_store']['objects']['dependency_proxy']['bucket'] = 'gitlab-dependency-proxy-gnaig'
+gitlab_rails['object_store']['objects']['terraform_state']['bucket'] = 'gitlab-terraform-state-gnaig'
+gitlab_rails['object_store']['objects']['ci_secure_files']['bucket'] = 'gitlab-ci-secure-files-gnaig'
+gitlab_rails['object_store']['objects']['pages']['bucket'] = 'gitlab-pages-gnaig'
+
+gitlab_rails['auto_migrate'] = true
+
+gitlab_rails['gitaly_token'] = "{{ gitaly_token }}"
+
+gitaly['enable'] = false

@@ -1,0 +1,81 @@
+- name: Load Gitlab root token env var
+  ansible.builtin.set_fact:
+    gitlab_root_token: "{{ lookup('ansible.builtin.env', 'GITLAB_ROOT_TOKEN') }}"
+  delegate_to: localhost
+
+- name: Fetch domain name
+  ansible.builtin.set_fact:
+    domain_name: "{{ lookup('amazon.aws.aws_ssm', '/gitlab/domain_name', region=aws_region) }}"
+  delegate_to: localhost
+
+# - name: Print gitlab root token
+#   ansible.builtin.debug:
+#     msg: "{{ gitlab_root_token }}"
+
+- name: Create Gitlab runnerss
+  ansible.builtin.uri:
+    url: https://gitlab.{{ domain_name }}/api/v4/user/runners
+    method: POST
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_root_token }}"
+    body_format: form-multipart
+    body:
+      runner_type: "instance_type"
+      description: "docker-runner"
+      run_untagged: "true"
+      locked: "false"
+      active: "true"
+    return_content: true
+    status_code: 201
+  register: gitlab_runner_auth_token
+  delegate_to: localhost
+  loop: "{{ groups['role_gitlab_runner_instance'] }}"
+
+- name: Print gitlab_runners
+  ansible.builtin.debug:
+    msg: "{{ item.json.token }}"
+  loop: "{{ gitlab_runner_auth_token.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Set Gitlab runner auth token
+  community.aws.ssm_parameter:
+    name: "/gitlab/runner/runner_auth_token/{{ item.item }}"
+    string_type: SecureString
+    value: "{{ item.json.token }}"
+    region: "{{ aws_region }}"
+    state: present
+    tags:
+      Environment: "production"
+      Project: "gitlab"
+      Name: "gitlab-runner-auth-token"
+  delegate_to: localhost
+  loop: "{{ gitlab_runner_auth_token.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+
+# This will be done automatically by refresh-gitlab-auth-token service
+# - name: Register GitLab runner
+#   ansible.builtin.command:
+#     argv:
+#       - gitlab-runner
+#       - register
+#       - --non-interactive
+#       - --url
+#       - "https://gitlab.{{ domain_name }}/"
+#       - --token
+#       - "{{ item.json.token }}"
+#       - --executor
+#       - docker
+#       - --docker-image
+#       - alpine:latest
+#       - --description
+#       - docker-runner
+#       - --docker-privileged
+#   become: true
+#   args:
+#     creates: /etc/gitlab-runner/config.toml
+#   loop: "{{ gitlab_runner_auth_token.results }}"
+#   loop_control:
+#     label: "{{ item.item }}"

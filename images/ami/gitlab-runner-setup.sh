@@ -10,3 +10,9 @@ curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/s
 sudo bash script.deb.sh
 
 sudo apt-get install gitlab-runner docker.io ca-certificates curl gnupg -y
+
+sudo apt-get install -y unzip
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip
+unzip awscliv2.zip
+sudo ./aws/install

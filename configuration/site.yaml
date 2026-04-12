@@ -1,0 +1,20 @@
+---
+# - name: Apply common configuration to all hosts
+#   hosts: all
+#   roles:
+#     - common
+
+- name: Configure Gitlab Rails
+  hosts: role_gitlab_rails_instance
+  roles:
+    - gitlab-rails
+
+- name: Configure Gitlab Gitaly
+  hosts: role_gitlab_gitaly_instance
+  roles:
+    - gitlab-gitaly
+
+- name: Configure Gitlab Runner
+  hosts: role_gitlab_runner_instance
+  roles:
+    - gitlab-runner

@@ -22,7 +22,7 @@ PID2=$!
 
 (
   echo "[5] Set up Gitlab instance runner"
-  ./gitlab-runners-setup.sh
+  # ./gitlab-runners-setup.sh
 ) &
 PID3=$!
 
