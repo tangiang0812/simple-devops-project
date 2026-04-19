@@ -28,7 +28,7 @@ subgraph AWS["AWS Cloud"]
         %% Entry Layer
         Route53["🌐 Route53"]
         NLB["🟠 NLB (Public)"]
-        ALB["🟢 ALB (Ingress Layer)"]
+        ALB["🟢 ALB"]
 
         Route53 --> NLB
         NLB --> ALB
