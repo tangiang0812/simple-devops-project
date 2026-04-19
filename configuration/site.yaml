@@ -20,7 +20,7 @@
   roles:
     - gitlab_rails_gitaly
 
-- name: Configure Gitlab Runner
-  hosts: role_gitlab_runner_instance
-  roles:
-    - gitlab_runner
+# - name: Configure Gitlab Runner
+#   hosts: role_gitlab_runner_instance
+#   roles:
+#     - gitlab_runner
