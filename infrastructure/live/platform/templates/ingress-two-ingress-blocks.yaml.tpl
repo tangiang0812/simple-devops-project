@@ -53,7 +53,7 @@ metadata:
     # /AWS.ALB/healthcheck with success code 12 this does not work atm =D
     # alb.ingress.kubernetes.io/healthcheck-path: /grpc.health.v1.Health/Check
     # alb.ingress.kubernetes.io/success-codes: '0'
-    alb.ingress.kubernetes.io/load-balancer-attributes: health_check_logs.s3.enabled=true,health_check_logs.s3.bucket=gitlab-alb-health-logs-gnaig,access_logs.s3.enabled=true,access_logs.s3.bucket=gitlab-alb-health-logs-gnaig
+    # alb.ingress.kubernetes.io/load-balancer-attributes: health_check_logs.s3.enabled=true,health_check_logs.s3.bucket=quick-use-gnaig,access_logs.s3.enabled=true,access_logs.s3.bucket=quick-use-gnaig
 
   labels:
     app: argocd-grpc-aws-load-balancer-ingress 

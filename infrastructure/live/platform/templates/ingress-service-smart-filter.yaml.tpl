@@ -15,7 +15,7 @@ metadata:
     alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
     alb.ingress.kubernetes.io/target-type: ip
     # Enable access logs for debugging, can be turned off later if not needed. Note that the logs will be stored in the specified S3 bucket, which may incur costs.
-    alb.ingress.kubernetes.io/load-balancer-attributes: health_check_logs.s3.enabled=true,health_check_logs.s3.bucket=gitlab-alb-health-logs-gnaig,access_logs.s3.enabled=true,access_logs.s3.bucket=gitlab-alb-health-logs-gnaig
+    # alb.ingress.kubernetes.io/load-balancer-attributes: health_check_logs.s3.enabled=true,health_check_logs.s3.bucket=quick-use-gnaig,access_logs.s3.enabled=true,access_logs.s3.bucket=quick-use-gnaig
     alb.ingress.kubernetes.io/healthcheck-path: /healthz
   labels:
     app: argocd-grpc-aws-load-balancer-ingress 

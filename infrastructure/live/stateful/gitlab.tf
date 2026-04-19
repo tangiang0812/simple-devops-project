@@ -55,7 +55,7 @@ module "gitlab_s3" {
 module "gitlab_s3_health_logs" {
   source = "../../modules/storage/s3"
 
-  name                           = "gitlab-alb-health-logs"
+  name                           = "quick-use"
   force_destroy                  = true
   attach_elb_log_delivery_policy = true
   suffix                         = "gnaig"
