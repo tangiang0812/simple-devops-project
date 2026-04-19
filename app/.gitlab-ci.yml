@@ -117,7 +117,7 @@ update_manifests:
     - |
       rm -rf manifests-repo
 
-      git clone --branch release https://gitlab-ci:$GITLAB_MANIFEST_PAT@$CI_SERVER_HOST/$CI_PROJECT_PATH-manifest manifests-repo
+      git clone --branch release https://gitlab-ci:$GITLAB_MANIFEST_PAT@$CI_SERVER_HOST/$CI_PROJECT_PATH-manifest.git manifests-repo
 
       sed -i "s|image: .*|image: ${IMAGE_URI}:$CI_COMMIT_SHORT_SHA |" \
         manifests-repo/deployment.yaml

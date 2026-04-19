@@ -59,14 +59,6 @@ wait $PID2 || {
 
 # sleep 400s for aws-load-balancer-controller fully set up
 while true; do
-  # HOSTNAME=$(kubectl get svc argocd-server -n argocd \
-  #   -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-
-  if [ -n "$HOSTNAME" ]; then
-    echo "ALB is ready: $HOSTNAME"
-    break
-  fi
-
   HOSTNAME1=$(kubectl get ingress argocd-ingress -n argocd \
     -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 

@@ -1,4 +1,0 @@
-- name: Configure Gitlab Gitaly
-  hosts: role_gitlab_gitaly_instance
-  roles:
-    - gitlab-gitaly

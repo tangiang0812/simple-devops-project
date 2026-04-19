@@ -1,4 +1,4 @@
-external_url 'https://gitlab.{{ domain }}'
+external_url 'https://gitlab.{{ domain_name }}'
 
 letsencrypt['enable'] = false
 
@@ -18,9 +18,9 @@ gitlab_rails['redis_ssl'] = true
 nginx['listen_port'] = 80
 nginx['listen_https'] = false
 
-gitlab_sshd['enable'] = true
+{# gitlab_sshd['enable'] = true
 gitlab_sshd['listen_address'] = '[::]:2222'
-gitlab_sshd['generate_host_keys'] = false
+gitlab_sshd['generate_host_keys'] = false #}
 
 gitlab_rails['monitoring_whitelist'] = ['0.0.0.0/0']
 gitlab_rails['initial_root_password'] = "{{ rails_password }}"
@@ -50,5 +50,3 @@ gitlab_rails['object_store']['objects']['pages']['bucket'] = 'gitlab-pages-gnaig
 gitlab_rails['auto_migrate'] = true
 
 gitlab_rails['gitaly_token'] = "{{ gitaly_token }}"
-
-gitaly['enable'] = false

@@ -4,17 +4,23 @@
 #   roles:
 #     - common
 
+
 - name: Configure Gitlab Rails
   hosts: role_gitlab_rails_instance
   roles:
-    - gitlab-rails
+    - gitlab_rails_base
 
 - name: Configure Gitlab Gitaly
   hosts: role_gitlab_gitaly_instance
   roles:
-    - gitlab-gitaly
+    - gitlab_gitaly
+
+- name: Configure Gitlab Rails
+  hosts: role_gitlab_runner_instance
+  roles:
+    - gitlab_rails_gitaly
 
 - name: Configure Gitlab Runner
   hosts: role_gitlab_runner_instance
   roles:
-    - gitlab-runner
+    - gitlab_runner
