@@ -24,10 +24,10 @@ variable "instance_profile_arn" {
   type        = string
 }
 
-variable "lb_target_group_arn" {
-  description = "ARN of the ALB HTTP target group."
-  type        = string
-  default     = ""
+variable "lb_target_group_arns" {
+  description = "ARNs of the ALB HTTP target groups."
+  type        = list(string)
+  default     = []
 }
 
 variable "ami_id" {

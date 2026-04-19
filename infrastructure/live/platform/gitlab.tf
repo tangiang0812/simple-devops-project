@@ -201,7 +201,7 @@ module "gitlab_rails" {
   ami_id               = data.aws_ami.gitlab_rails_ami.id
   subnets              = local.network.private_subnets
   instance_profile_arn = module.gitlab_rails_role.instance_profile_arn
-  lb_target_group_arn  = module.gitlab_alb.target_group_arns["int_instance"]
+  lb_target_group_arns = [module.gitlab_alb.target_group_arns["int_instance"], module.gitlab_nlb.target_group_arns["int_ssh"]]
   # configuring with ansible is more reliable than user_data
   # user_data            = filebase64("${path.module}/templates/user-data-gitlab-rails.sh")
 
@@ -431,14 +431,13 @@ resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_nlb_https_from_an
   to_port           = 443
 }
 
-# resource "aws_vpc_security_group_egress_rule" "egress_gitlab_nlb_ssh_to_bastion_host" {
-#   security_group_id            = module.gitlab_nlb.lb_security_group_id
-#   referenced_security_group_id = module.bastion.security_group_id
-#   # cidr_ipv4         = "0.0.0.0/0"
-#   from_port   = 22
-#   ip_protocol = "tcp"
-#   to_port     = 22
-# }
+resource "aws_vpc_security_group_egress_rule" "egress_gitlab_nlb_ssh_to_gitlab_rails" {
+  security_group_id            = module.gitlab_nlb.lb_security_group_id
+  referenced_security_group_id = module.gitlab_rails.security_group_id
+  from_port                    = 22
+  ip_protocol                  = "tcp"
+  to_port                      = 22
+}
 
 resource "aws_vpc_security_group_egress_rule" "egress_gitlab_nlb_https_to_gitlab_alb" {
   security_group_id            = module.gitlab_nlb.lb_security_group_id
@@ -473,13 +472,13 @@ resource "aws_vpc_security_group_egress_rule" "egress_gitlab_alb_http_to_gitlab_
   to_port                      = 80
 }
 
-# resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_rails_ssh_from_gitlab_bastion_host" {
-#   security_group_id            = module.gitlab_rails.security_group_id
-#   referenced_security_group_id = module.bastion.security_group_id
-#   from_port                    = 22
-#   ip_protocol                  = "tcp"
-#   to_port                      = 22
-# }
+resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_rails_ssh_from_gitlab_nlb" {
+  security_group_id            = module.gitlab_rails.security_group_id
+  referenced_security_group_id = module.gitlab_nlb.lb_security_group_id
+  from_port                    = 22
+  ip_protocol                  = "tcp"
+  to_port                      = 22
+}
 
 resource "aws_vpc_security_group_ingress_rule" "ingress_gitlab_rails_http_from_gitlab_alb" {
   security_group_id            = module.gitlab_rails.security_group_id
