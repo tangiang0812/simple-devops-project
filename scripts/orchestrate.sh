@@ -31,25 +31,28 @@ wait $PID1 || {
   echo "Group 1 failed"
   exit 1
 }
+
+# ./argocd-ingress-setup.sh
+
+# while true; do
+#   # HOSTNAME=$(kubectl get svc argocd-server -n argocd \
+#   #   -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+#   sleep 5 # Race condition
+#   echo giangdpetrai
+
+#   ENDPOINT=$(kubectl get endpoints aws-load-balancer-webhook-service -n kube-system -o jsonpath='{.subsets[0].addresses[0].ip}')
+#   if [ -n "$ENDPOINT" ]; then
+#     echo "ALB controller is ready: $ENDPOINT"
+#     break
+#   fi
+
+#   echo "Waiting for ALB controller..."
+#   sleep 5
+# done
+
 echo "[6] Install ArgoCD"
+sleep 20 # race condition
 ./argocd-install.sh
-
-
-sleep 10 # Race condition
-while true; do
-  # HOSTNAME=$(kubectl get svc argocd-server -n argocd \
-  #   -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-  ENDPOINT=$(kubectl get endpoints aws-load-balancer-webhook-service -n \
-    kube-system -o jsonpath='{.subsets[0].addresses[0].ip}')
-
-  if [ -n "$ENDPOINT" ]; then
-    echo "ALB controller is ready: $ENDPOINT"
-    break
-  fi
-
-  echo "Waiting for ALB controller..."
-  sleep 5
-done
 ./argocd-ingress-setup.sh
 
 wait $PID2 || {
@@ -58,7 +61,8 @@ wait $PID2 || {
 }
 
 # sleep 400s for aws-load-balancer-controller fully set up
-while true; do
+while true 
+do
   HOSTNAME1=$(kubectl get ingress argocd-ingress -n argocd \
     -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 
@@ -72,12 +76,26 @@ while true; do
     break
   fi
 
-  echo "Waiting for ALB hostname..."
+  echo "Waiting for ArgoCD ALB hostname..."
+  sleep 5
+done
+
+while true
+do
+  ARGOCD_DOMAIN=$(aws route53 list-resource-record-sets --hosted-zone-id $TF_VAR_route53_zone_id \
+  --query "ResourceRecordSets[?Name == 'grpc-argocd.$DOMAIN_NAME.']" | jq -r ".[0].Name")
+
+  if [ -n "$ARGOCD_DOMAIN" ] && [ "$ARGOCD_DOMAIN" != "null" ]; then
+    echo "ARGOCD_DOMAIN DNS are ready: $ARGOCD_DOMAIN"
+    sleep 5
+    break
+  fi
+  echo "Waiting for ArgoCD ALB DNS..."
   sleep 5
 done
 
 echo "[7] ArgoCD set up repository and application"
-sleep 30 # Race condition
+# sleep 30 # Race condition
 ./argocd-setup-app.sh
 
 wait $PID3 || {
@@ -89,4 +107,5 @@ echo "[8] Expose load balancer urls for ArgoCD and Application"
 echo "[9] Expose ArgoCD admin secret"
 ./argocd-expose.sh
 
+echo
 echo "[DONE]"
