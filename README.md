@@ -224,8 +224,7 @@ Terraform provisions:
 Ansible is used to configure GitLab components:
 
 * GitLab Rails setup (`/etc/gitlab/gitlab.rb`)
-* `gitlab-ctl reconfigure`
-* Gitaly configuration
+* Gitaly configuration (`/etc/gitlab/gitlab.rb`)
 * Rails ↔ Gitaly connectivity
 
 ---
